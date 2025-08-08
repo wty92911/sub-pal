@@ -14,11 +14,6 @@ pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
         .await
 }
 
-/// Runs database migrations
-pub async fn run_migrations(pool: &PgPool) -> Result<(), sqlx::migrate::MigrateError> {
-    sqlx::migrate!("./migrations").run(pool).await
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

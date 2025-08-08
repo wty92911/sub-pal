@@ -73,11 +73,6 @@ async fn main() {
     // Create database connection pool
     let pool = create_pool().await.expect("Failed to create database pool");
 
-    // Run database migrations
-    config::run_migrations(&pool)
-        .await
-        .expect("Failed to run database migrations");
-
     // Build application with routes
     let app = Router::new()
         .nest("/api/v1", api_routes())
