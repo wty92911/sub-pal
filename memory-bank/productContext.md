@@ -14,7 +14,6 @@ Create a comprehensive subscription management platform that helps users track, 
 ### User Management
 - Secure sign-up and login system
 - Profile management for personal details
-- Password reset functionality
 
 ### Subscription Management
 - Add new subscription with details:
@@ -55,4 +54,4 @@ Create a comprehensive subscription management platform that helps users track, 
 - User adoption and retention
 - Frequency of subscription management actions
 - User satisfaction with expense insights
-- Reduction in missed subscription renewals 
+- Reduction in missed subscription renewals

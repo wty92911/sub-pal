@@ -1,7 +1,3 @@
--- Clear all tables
-DROP TABLE IF EXISTS user_profiles;
-DROP TABLE IF EXISTS users;
-
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

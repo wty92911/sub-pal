@@ -3,39 +3,38 @@
 ## Immediate Tasks (Phase 1)
 
 ### Database Setup
-- [ ] Set up PostgreSQL schema for users
-- [ ] Create migration script for initial tables
-- [ ] Configure database connection in the application
-- [ ] Implement repository pattern for database access
-- [ ] Add user model and schema validation
+- [x] Set up PostgreSQL schema for users
+- [x] Create migration script for initial tables
+- [x] Configure database connection in the application
+- [x] Implement repository pattern for database access
+- [x] Add user model and schema validation
 
 ### Backend Authentication
-- [ ] Create user registration endpoint
-  - Validate input data
-  - Hash passwords securely
-  - Store user data
-  - Generate confirmation tokens
-- [ ] Create user login endpoint
-  - Validate credentials
-  - Generate JWT tokens
-  - Set proper authentication headers
-- [ ] Implement middleware for protected routes
-  - JWT verification
-  - Role-based authorization
-  - Error handling for unauthorized access
-- [ ] Add password reset functionality
+- [x] Create user registration endpoint
+  - [x] Validate input data
+  - [x] Hash passwords securely
+  - [x] Store user data
+  - [x] Generate confirmation tokens
+- [x] Create user login endpoint
+  - [x] Validate credentials
+  - [x] Generate JWT tokens
+  - [x] Set proper authentication headers
+- [x] Implement middleware for protected routes
+  - [x] JWT verification
+  - [x] Role-based authorization
+  - [x] Error handling for unauthorized access
 
 ### Frontend Authentication
 - [ ] Create registration form component
-  - Form validation
-  - Error handling
-  - Success feedback
+  - [ ] Form validation
+  - [ ] Error handling
+  - [ ] Success feedback
 - [ ] Create login form component
-  - Credential validation
-  - Error handling
-  - Token storage
+  - [ ] Credential validation
+  - [ ] Error handling
+  - [ ] Token storage
 - [ ] Implement authenticated routes with guards
-- [ ] Add user profile management UI
+<!-- - [ ] Add user profile management UI -->
 
 ## Upcoming Tasks (Phase 2)
 
@@ -52,7 +51,7 @@
 - [ ] Add subscription details view
 
 ## Task Status
-- **In Progress**: Project initialization and planning
-- **Next**: Database setup and configuration
+- **In Progress**: Backend Authentication
+- **Next**: Frontend Authentication
 - **Blocked**: None
-- **Completed**: Basic project scaffolding 
+- **Completed**: Database setup, User registration and login endpoints, JWT authentication

@@ -12,7 +12,6 @@
 - [ ] User registration API endpoint
 - [ ] User login API endpoint
 - [ ] JWT authentication middleware
-- [ ] Password reset functionality
 - [ ] Frontend authentication forms
 - [ ] Protected routes implementation
 
@@ -51,4 +50,4 @@
 - [ ] Email notification system
 
 ## Current Focus
-Setting up the project structure and implementing the user authentication system. 
+Setting up the project structure and implementing the user authentication system.

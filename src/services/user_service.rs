@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::models::{AuthResponse, LoginRequest, RegisterRequest, User, UserProfile, UserResponse};
+use crate::models::{AuthResponse, LoginRequest, RegisterRequest, UserResponse};
 use crate::utils::response::AppError;
 use crate::utils::{generate_refresh_token, generate_token, hash_password, verify_password};
 
@@ -44,7 +44,7 @@ impl UserService {
 
         // Insert user
         let user = sqlx::query_as!(
-            User,
+            crate::models::User,
             r#"
             INSERT INTO users (email, password_hash)
             VALUES ($1, $2)
@@ -59,7 +59,7 @@ impl UserService {
 
         // Insert user profile
         let profile = sqlx::query_as!(
-            UserProfile,
+            crate::models::UserProfile,
             r#"
             INSERT INTO user_profiles (user_id, name, preferences)
             VALUES ($1, $2, $3)
@@ -86,7 +86,7 @@ impl UserService {
     pub async fn login(&self, request: LoginRequest) -> Result<AuthResponse, AppError> {
         // Find user by email
         let user = sqlx::query_as!(
-            User,
+            crate::models::User,
             r#"SELECT id, email, password_hash, created_at, updated_at FROM users WHERE email = $1"#,
             request.email
         )
@@ -108,7 +108,7 @@ impl UserService {
 
         // Get user profile
         let profile = sqlx::query_as!(
-            UserProfile,
+            crate::models::UserProfile,
             r#"SELECT id, user_id, name, preferences, created_at, updated_at FROM user_profiles WHERE user_id = $1"#,
             user.id
         )
@@ -136,7 +136,7 @@ impl UserService {
     pub async fn get_user_by_id(&self, user_id: Uuid) -> Result<UserResponse, AppError> {
         // Get user
         let user = sqlx::query_as!(
-            User,
+            crate::models::User,
             r#"SELECT id, email, password_hash, created_at, updated_at FROM users WHERE id = $1"#,
             user_id
         )
@@ -147,7 +147,7 @@ impl UserService {
 
         // Get user profile
         let profile = sqlx::query_as!(
-            UserProfile,
+            crate::models::UserProfile,
             r#"SELECT id, user_id, name, preferences, created_at, updated_at FROM user_profiles WHERE user_id = $1"#,
             user_id
         )

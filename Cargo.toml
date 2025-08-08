@@ -14,8 +14,10 @@ keywords = ["subscription", "management", "panel"]
 
 [dependencies]
 # Web framework
-axum = "0.8"
-tower-http = { version = "0.5.0", features = ["fs", "trace", "cors"] }
+axum = { version = "0.8", features = ["macros"] }
+tower-http = { version = "0.5.0", features = ["fs", "trace", "cors", "auth"] }
+axum-extra = { version = "0.9", features = ["typed-header"] }
+http = "1.0"
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
@@ -34,6 +36,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Authentication
 jsonwebtoken = "9.2"
 argon2 = "0.5"
+async-trait = "0.1"
 
 # Utilities
 chrono = { version = "0.4", features = ["serde"] }
