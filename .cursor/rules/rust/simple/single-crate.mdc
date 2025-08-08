@@ -570,6 +570,9 @@ fn main() {
 
 // ❌ Single massive file
 // src/lib.rs with 2000+ lines of mixed functionality
+
+
+format!("some string {}", e);
 ```
 
 ### ✅ Do This Instead
@@ -588,6 +591,8 @@ fn main() -> anyhow::Result<()> {
 // ✅ Modular lib.rs
 // src/lib.rs - Clean public API with module re-exports
 // src/modules/ - Separate files for different functionality
+
+format!("some string {e}");
 ```
 
 This single crate structure provides a solid foundation for simple Rust projects while maintaining clean organization and scalability.

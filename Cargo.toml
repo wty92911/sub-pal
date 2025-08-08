@@ -7,18 +7,37 @@ license = "MIT"
 documentation = "https://docs.rs/"
 repository = "https://github.com/TODO"
 homepage = "https://github.com/TODO"
-description = """
-
-"""
+description = "Subscription Service Management Panel"
 readme = "README.md"
 categories = ["development-tools"]
-keywords = []
+keywords = ["subscription", "management", "panel"]
 
 [dependencies]
+# Web framework
 axum = "0.8"
+tower-http = { version = "0.5.0", features = ["fs", "trace", "cors"] }
+
+# Async runtime
 tokio = { version = "1", features = ["full"] }
+
+# Serialization/Deserialization
 serde = { version = "1.0", features = ["derive"] }
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres"] }
-tower-http = { version = "0.5.0", features = ["fs", "trace"] }
+serde_json = "1.0"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "json"] }
+
+# Logging
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Authentication
+jsonwebtoken = "9.2"
+argon2 = "0.5"
+
+# Utilities
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.6", features = ["v4", "serde"] }
+dotenv = "0.15"
+rand = "0.8"
+clap = { version = "4.4", features = ["derive"] }
