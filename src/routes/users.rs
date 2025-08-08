@@ -16,7 +16,7 @@ use crate::utils::response::{ApiResponse, AppError, success};
 pub fn user_routes() -> Router<PgPool> {
     Router::new()
         .route("/me", get(get_current_user))
-        .route("/:id", get(get_user_by_id))
+        .route("/{id}", get(get_user_by_id))
 }
 
 /// Get the current user

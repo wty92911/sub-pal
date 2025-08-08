@@ -1,4 +1,10 @@
 import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './lib/auth-context';
+import { LoginPage } from './pages/login-page';
+import { RegisterPage } from './pages/register-page';
+import { DashboardPage } from './pages/dashboard-page';
+import { ProtectedRoute } from './components/auth/protected-route';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -6,27 +12,50 @@ function App() {
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
       <div className="bg-background text-foreground">
-        {/* Hero Section */}
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-              Welcome to Our Platform
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              A modern solution for all your needs. Built with React, TypeScript, and Tailwind CSS.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <button
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-              >
-                Toggle Theme
-              </button>
-              <a href="#" className="text-sm font-semibold leading-6">
-                Learn more <span aria-hidden="true">→</span>
-              </a>
-            </div>
-          </div>
+        <AuthProvider>
+          <Router>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+
+              {/* Protected routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                {/* Add more protected routes here */}
+              </Route>
+
+              {/* Redirect to dashboard if authenticated, otherwise to login */}
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </Router>
+        </AuthProvider>
+
+        {/* Theme toggle button */}
+        <div className="fixed bottom-4 right-4">
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="rounded-full bg-primary p-2 text-primary-foreground shadow-sm hover:bg-primary/90"
+            aria-label="Toggle theme"
+          >
+            {isDarkMode ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
     </div>

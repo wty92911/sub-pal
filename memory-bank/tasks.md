@@ -25,15 +25,15 @@
   - [x] Error handling for unauthorized access
 
 ### Frontend Authentication
-- [ ] Create registration form component
-  - [ ] Form validation
-  - [ ] Error handling
-  - [ ] Success feedback
-- [ ] Create login form component
-  - [ ] Credential validation
-  - [ ] Error handling
-  - [ ] Token storage
-- [ ] Implement authenticated routes with guards
+- [x] Create registration form component
+  - [x] Form validation
+  - [x] Error handling
+  - [x] Success feedback
+- [x] Create login form component
+  - [x] Credential validation
+  - [x] Error handling
+  - [x] Token storage
+- [x] Implement authenticated routes with guards
 <!-- - [ ] Add user profile management UI -->
 
 ## Upcoming Tasks (Phase 2)
@@ -51,7 +51,7 @@
 - [ ] Add subscription details view
 
 ## Task Status
-- **In Progress**: Backend Authentication
-- **Next**: Frontend Authentication
+- **In Progress**: Subscription Management Backend
+- **Next**: Subscription Management Frontend
 - **Blocked**: None
-- **Completed**: Database setup, User registration and login endpoints, JWT authentication
+- **Completed**: Database setup, Backend Authentication, Frontend Authentication

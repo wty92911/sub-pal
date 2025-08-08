@@ -1,7 +1,9 @@
 use axum::Router;
+use axum::http::Method;
 use clap::Parser;
 use std::env;
 use std::net::SocketAddr;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -73,10 +75,36 @@ async fn main() {
     // Create database connection pool
     let pool = create_pool().await.expect("Failed to create database pool");
 
+    // Configure CORS
+    let allowed_origins = AllowOrigin::list(vec!["http://localhost:5173".parse().unwrap()]);
+
+    // Define allowed methods
+    let allowed_methods = vec![
+        Method::GET,
+        Method::POST,
+        Method::PUT,
+        Method::DELETE,
+        Method::OPTIONS,
+    ];
+
+    // Define allowed headers
+    let allowed_headers = vec![
+        axum::http::header::CONTENT_TYPE,
+        axum::http::header::AUTHORIZATION,
+        axum::http::header::ACCEPT,
+    ];
+
+    let cors = CorsLayer::new()
+        .allow_origin(allowed_origins)
+        .allow_methods(allowed_methods)
+        .allow_headers(allowed_headers)
+        .allow_credentials(true);
+
     // Build application with routes
     let app = Router::new()
         .nest("/api/v1", api_routes())
         .with_state(pool)
+        .layer(cors)
         .layer(TraceLayer::new_for_http());
 
     // Start server
