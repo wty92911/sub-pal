@@ -39,10 +39,10 @@
 ## Upcoming Tasks (Phase 2)
 
 ### Subscription Management Backend
-- [ ] Create subscription database schema
-- [ ] Implement CRUD API endpoints for subscriptions
-- [ ] Add subscription validation logic
-- [ ] Implement subscription cycle calculations
+- [x] Create subscription database schema
+- [x] Implement CRUD API endpoints for subscriptions
+- [x] Add subscription validation logic
+- [x] Implement subscription cycle calculations
 
 ### Subscription Management Frontend
 - [ ] Create subscription listing component
@@ -51,7 +51,16 @@
 - [ ] Add subscription details view
 
 ## Task Status
-- **In Progress**: Subscription Management Backend
-- **Next**: Subscription Management Frontend
+- **In Progress**: Subscription Management Frontend
+- **Next**: Statistics and Reporting Backend
 - **Blocked**: None
-- **Completed**: Database setup, Backend Authentication, Frontend Authentication
+- **Completed**: Database setup, Backend Authentication, Frontend Authentication, Subscription Management Backend
+
+## Implementation Notes
+
+### Subscription Management Backend
+- Created database schema for subscriptions and payment records
+- Implemented models using sqlx::types::BigDecimal for monetary values
+- Created CRUD API with validation for subscriptions and payment records
+- Implemented billing cycle calculations for different subscription types (monthly, yearly, weekly, custom)
+- Added metrics calculations for monthly and yearly totals

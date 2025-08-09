@@ -2,8 +2,10 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
 };
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::{
+    http::{HeaderMap, StatusCode, header::AUTHORIZATION},
+    response::{IntoResponse, Response},
+};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -19,16 +21,17 @@ pub struct Claims {
 
 // Authenticated user extracted from JWT
 #[derive(Debug, Clone)]
-pub struct _AuthUser {
-    pub id: Uuid,
+pub struct Auth {
+    pub user_id: Uuid,
 }
 
 // Authentication error
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum AuthError {
-    _WrongCredentials,
-    _MissingCredentials,
-    _TokenCreation,
+    WrongCredentials,
+    MissingCredentials,
+    TokenCreation,
     InvalidToken,
 }
 
@@ -36,17 +39,38 @@ pub enum AuthError {
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            AuthError::_WrongCredentials => (StatusCode::UNAUTHORIZED, "Wrong credentials"),
-            AuthError::_MissingCredentials => (StatusCode::BAD_REQUEST, "Missing credentials"),
-            AuthError::_TokenCreation => {
-                (StatusCode::INTERNAL_SERVER_ERROR, "Token creation error")
-            }
+            AuthError::WrongCredentials => (StatusCode::UNAUTHORIZED, "Wrong credentials"),
+            AuthError::MissingCredentials => (StatusCode::BAD_REQUEST, "Missing credentials"),
+            AuthError::TokenCreation => (StatusCode::INTERNAL_SERVER_ERROR, "Token creation error"),
             AuthError::InvalidToken => (StatusCode::UNAUTHORIZED, "Invalid token"),
         };
 
         // Create a response with the status code and error message
         (status, error_message).into_response()
     }
+}
+
+/// Extract authenticated user from request headers
+pub fn extract_auth(headers: &HeaderMap) -> Result<Auth, AuthError> {
+    // Extract the token from the Authorization header
+    let auth_header = headers
+        .get(AUTHORIZATION)
+        .ok_or(AuthError::InvalidToken)?
+        .to_str()
+        .map_err(|_| AuthError::InvalidToken)?;
+
+    // Check if it's a Bearer token
+    if !auth_header.starts_with("Bearer ") {
+        return Err(AuthError::InvalidToken);
+    }
+
+    // Extract the token
+    let token = &auth_header[7..];
+
+    // Extract the user ID from the token
+    let user_id = extract_user_id_from_token(token)?;
+
+    Ok(Auth { user_id })
 }
 
 // Hash a password
@@ -102,11 +126,11 @@ pub fn generate_refresh_token(user_id: Uuid) -> Result<String, jsonwebtoken::err
 
     let claims = Claims {
         sub: user_id.to_string(),
-        exp: current_time + 7 * 24 * 3600, // Refresh token expires in 7 days
+        exp: current_time + 30 * 24 * 3600, // Refresh token expires in 30 days
         iat: current_time,
     };
 
-    // Encode the refresh token
+    // Encode the token
     encode(
         &Header::default(),
         &claims,
@@ -126,7 +150,7 @@ pub fn extract_user_id_from_token(token: &str) -> Result<Uuid, AuthError> {
     )
     .map_err(|_| AuthError::InvalidToken)?;
 
-    // Extract the user ID from the token
+    // Extract user ID from claims
     let user_id = Uuid::parse_str(&token_data.claims.sub).map_err(|_| AuthError::InvalidToken)?;
 
     Ok(user_id)
@@ -138,7 +162,7 @@ mod tests {
 
     #[test]
     fn test_password_hash_and_verify() {
-        let password = "secure_password123";
+        let password = "test_password";
         let hash = hash_password(password).unwrap();
 
         assert!(verify_password(password, &hash).unwrap());
