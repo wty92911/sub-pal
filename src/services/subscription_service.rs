@@ -1,7 +1,7 @@
 use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
-use crate::models::{Currency, Subscription, SubscriptionListResponse, SubscriptionStatus};
+use crate::models::{Subscription, SubscriptionListResponse};
 
 pub struct SubscriptionService {
     pool: Pool<Postgres>,
@@ -17,7 +17,8 @@ impl SubscriptionService {
         &self,
         req: Subscription,
     ) -> Result<Subscription, sqlx::Error> {
-        let row = sqlx::query!(
+        let row = sqlx::query_as!(
+            Subscription,
             r#"
             INSERT INTO subscriptions
             (user_id, name, description, amount, currency, billing_cycle_days,
@@ -44,23 +45,7 @@ impl SubscriptionService {
         .fetch_one(&self.pool)
         .await?;
 
-        // Convert to Subscription model
-        Ok(Subscription {
-            id: row.id,
-            user_id: row.user_id,
-            name: row.name,
-            description: row.description,
-            amount: row.amount,
-            currency: Currency::try_from(row.currency).unwrap_or_default(),
-            billing_cycle_days: row.billing_cycle_days.unwrap_or(0),
-            start_date: row.start_date,
-            next_billing_date: row.next_billing_date,
-            status: SubscriptionStatus::try_from(row.status).unwrap_or(SubscriptionStatus::Active),
-            category: row.category,
-            color: row.color,
-            created_at: Some(row.created_at),
-            updated_at: Some(row.updated_at),
-        })
+        Ok(row)
     }
 
     /// Get a subscription by id
@@ -69,7 +54,8 @@ impl SubscriptionService {
         user_id: Uuid,
         subscription_id: Uuid,
     ) -> Result<Subscription, sqlx::Error> {
-        let row = sqlx::query!(
+        let row = sqlx::query_as!(
+            Subscription,
             r#"
             SELECT id, user_id, name, description, amount,
                    currency as "currency!: String",
@@ -85,23 +71,7 @@ impl SubscriptionService {
         .fetch_one(&self.pool)
         .await?;
 
-        // Convert to Subscription model
-        Ok(Subscription {
-            id: row.id,
-            user_id: row.user_id,
-            name: row.name,
-            description: row.description,
-            amount: row.amount,
-            currency: Currency::try_from(row.currency).unwrap_or_default(),
-            billing_cycle_days: row.billing_cycle_days.unwrap_or(0),
-            start_date: row.start_date,
-            next_billing_date: row.next_billing_date,
-            status: SubscriptionStatus::try_from(row.status).unwrap_or(SubscriptionStatus::Active),
-            category: row.category,
-            color: row.color,
-            created_at: Some(row.created_at),
-            updated_at: Some(row.updated_at),
-        })
+        Ok(row)
     }
 
     /// Get all subscriptions for a user
@@ -109,7 +79,8 @@ impl SubscriptionService {
         &self,
         user_id: Uuid,
     ) -> Result<SubscriptionListResponse, sqlx::Error> {
-        let rows = sqlx::query!(
+        let rows = sqlx::query_as!(
+            Subscription,
             r#"
             SELECT id, user_id, name, description, amount,
                    currency as "currency!: String",
@@ -125,29 +96,9 @@ impl SubscriptionService {
         .fetch_all(&self.pool)
         .await?;
 
-        // Convert to Subscription models
-        let subscriptions = rows
-            .into_iter()
-            .map(|row| Subscription {
-                id: row.id,
-                user_id: row.user_id,
-                name: row.name,
-                description: row.description,
-                amount: row.amount,
-                currency: Currency::try_from(row.currency).unwrap_or_default(),
-                billing_cycle_days: row.billing_cycle_days.unwrap_or(0),
-                start_date: row.start_date,
-                next_billing_date: row.next_billing_date,
-                status: SubscriptionStatus::try_from(row.status)
-                    .unwrap_or(SubscriptionStatus::Active),
-                category: row.category,
-                color: row.color,
-                created_at: Some(row.created_at),
-                updated_at: Some(row.updated_at),
-            })
-            .collect();
-
-        Ok(SubscriptionListResponse { subscriptions })
+        Ok(SubscriptionListResponse {
+            subscriptions: rows,
+        })
     }
 
     /// Update a subscription
@@ -157,7 +108,8 @@ impl SubscriptionService {
         req: Subscription,
     ) -> Result<Subscription, sqlx::Error> {
         // Update the subscription
-        let row = sqlx::query!(
+        let row = sqlx::query_as!(
+            Subscription,
             r#"
             UPDATE subscriptions
             SET name = $2, description = $3, amount = $4, currency = $5,
@@ -185,23 +137,7 @@ impl SubscriptionService {
         .fetch_one(&self.pool)
         .await?;
 
-        // Convert to Subscription model
-        Ok(Subscription {
-            id: row.id,
-            user_id: row.user_id,
-            name: row.name,
-            description: row.description,
-            amount: row.amount,
-            currency: Currency::try_from(row.currency).unwrap_or_default(),
-            billing_cycle_days: row.billing_cycle_days.unwrap_or(0),
-            start_date: row.start_date,
-            next_billing_date: row.next_billing_date,
-            status: SubscriptionStatus::try_from(row.status).unwrap_or(SubscriptionStatus::Active),
-            category: row.category,
-            color: row.color,
-            created_at: Some(row.created_at),
-            updated_at: Some(row.updated_at),
-        })
+        Ok(row)
     }
 
     /// Delete a subscription

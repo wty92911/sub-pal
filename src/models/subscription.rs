@@ -2,10 +2,8 @@ use bigdecimal::BigDecimal;
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use std::convert::TryFrom;
 use std::str::FromStr;
 use uuid::Uuid;
-
 /// Subscription model representing a subscription in the system
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Subscription {
@@ -62,6 +60,12 @@ impl SubscriptionStatus {
     }
 }
 
+impl Default for SubscriptionStatus {
+    fn default() -> Self {
+        Self::Active
+    }
+}
+
 impl FromStr for SubscriptionStatus {
     type Err = String;
 
@@ -75,11 +79,9 @@ impl FromStr for SubscriptionStatus {
     }
 }
 
-impl TryFrom<String> for SubscriptionStatus {
-    type Error = String;
-
-    fn try_from(status: String) -> Result<Self, Self::Error> {
-        Self::from_str(&status)
+impl From<String> for SubscriptionStatus {
+    fn from(value: String) -> Self {
+        SubscriptionStatus::from_str(&value).unwrap_or_default()
     }
 }
 
@@ -125,11 +127,9 @@ impl FromStr for Currency {
     }
 }
 
-impl TryFrom<String> for Currency {
-    type Error = String;
-
-    fn try_from(currency: String) -> Result<Self, Self::Error> {
-        Self::from_str(&currency)
+impl From<String> for Currency {
+    fn from(value: String) -> Self {
+        Currency::from_str(&value).unwrap_or_default()
     }
 }
 

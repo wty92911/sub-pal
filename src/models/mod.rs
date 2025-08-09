@@ -5,6 +5,4 @@ pub use self::user::{
     AuthResponse, LoginRequest, RegisterRequest, User, UserProfile, UserResponse,
 };
 
-pub use self::subscription::{
-    Currency, Subscription, SubscriptionListResponse, SubscriptionStatus,
-};
+pub use self::subscription::{Subscription, SubscriptionListResponse};
