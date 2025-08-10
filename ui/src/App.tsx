@@ -4,6 +4,9 @@ import { AuthProvider } from './lib/auth-context';
 import { LoginPage } from './pages/login-page';
 import { RegisterPage } from './pages/register-page';
 import { DashboardPage } from './pages/dashboard-page';
+import { SubscriptionPage } from './pages/subscription-page';
+import { AddSubscriptionPage } from './pages/add-subscription-page';
+import { StatisticsPage } from './pages/statistics-page';
 import { ProtectedRoute } from './components/auth/protected-route';
 
 function App() {
@@ -21,8 +24,13 @@ function App() {
 
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<DashboardPage />} />
-                {/* Add more protected routes here */}
+                <Route path="/dashboard" element={<SubscriptionPage />} />
+                <Route path="/subscriptions/new" element={<AddSubscriptionPage />} />
+                <Route path="/subscriptions/edit/:id" element={<AddSubscriptionPage />} />
+                <Route path="/subscriptions/:id" element={<AddSubscriptionPage />} />
+                <Route path="/statistics" element={<StatisticsPage />} />
+                {/* Legacy dashboard route */}
+                <Route path="/legacy-dashboard" element={<DashboardPage />} />
               </Route>
 
               {/* Redirect to dashboard if authenticated, otherwise to login */}
@@ -32,7 +40,7 @@ function App() {
         </AuthProvider>
 
         {/* Theme toggle button */}
-        <div className="fixed bottom-4 right-4">
+        <div className="fixed bottom-4 right-4 z-[100]">
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
             className="rounded-full bg-primary p-2 text-primary-foreground shadow-sm hover:bg-primary/90"

@@ -1,90 +1,117 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authApi, User } from './api';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  avatar?: string; // Add avatar property
+}
 
 interface AuthContextType {
   user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
   logout: () => void;
+  isLoading: boolean;
+  error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Check if user is already logged in
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-
-      if (token) {
-        try {
-          const userData = await authApi.getCurrentUser();
-          setUser(userData);
-        } catch (error) {
-          console.error('Authentication error:', error);
-          authApi.logout();
+      try {
+        // Simulate API call to check authentication
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
         }
+      } catch (err) {
+        console.error('Auth check failed:', err);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, _password: string) => {
     setIsLoading(true);
+    setError(null);
+
     try {
-      const response = await authApi.login({ email, password });
-      setUser(response.user);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // For demo purposes, always succeed with mock data
+      const userData: User = {
+        id: '123',
+        email,
+        name: email.split('@')[0],
+        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,
+      };
+
+      // Store user data
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+    } catch (err) {
+      setError('Login failed. Please check your credentials.');
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (email: string, password: string, name?: string) => {
+  const register = async (email: string, _password: string, name?: string) => {
     setIsLoading(true);
+    setError(null);
+
     try {
-      await authApi.register({ email, password, name });
-      // After registration, log the user in
-      await login(email, password);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // For demo purposes, always succeed with mock data
+      const userData: User = {
+        id: '123',
+        email,
+        name: name || email.split('@')[0],
+        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,
+      };
+
+      // Store user data
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+    } catch (err) {
+      setError('Registration failed. Please try again.');
+      console.error('Registration error:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const logout = () => {
-    authApi.logout();
+    localStorage.removeItem('user');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        login,
-        register,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, login, register, logout, isLoading, error }}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-
-  return context;
-}
+};

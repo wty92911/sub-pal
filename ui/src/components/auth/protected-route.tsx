@@ -1,21 +1,23 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../../lib/auth-context';
+import { useAuth } from '@/lib/auth-context';
 
-interface ProtectedRouteProps {
-  redirectTo?: string;
-}
+/**
+ * A route wrapper that redirects to the login page if the user is not authenticated
+ */
+export function ProtectedRoute() {
+  const { user, isLoading } = useAuth();
+  const isAuthenticated = !!user;
 
-export function ProtectedRoute({ redirectTo = '/login' }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
-
+  // Show nothing while checking authentication
   if (isLoading) {
-    // Show loading indicator while checking authentication
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-      </div>
-    );
+    return null;
   }
 
-  return isAuthenticated ? <Outlet /> : <Navigate to={redirectTo} />;
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Render the child routes
+  return <Outlet />;
 }
