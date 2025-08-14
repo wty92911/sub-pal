@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '../../lib/auth-context';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 // Form validation schema
 const registerSchema = z.object({
@@ -38,7 +38,7 @@ export function RegisterForm() {
 
     try {
       await registerUser(data.email, data.password, data.name);
-      navigate('/dashboard');
+      navigate('/login');
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Registration failed. Please try again.');
     } finally {
@@ -140,9 +140,9 @@ export function RegisterForm() {
 
       <div className="text-center text-sm">
         Already have an account?{' '}
-        <a href="/login" className="text-primary hover:underline">
+        <Link to="/login" className="text-primary hover:underline">
           Login
-        </a>
+        </Link>
       </div>
     </div>
   );

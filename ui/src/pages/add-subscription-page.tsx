@@ -3,64 +3,65 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Header } from "@/components/subscription/header";
 import { Navigation } from "@/components/subscription/navigation";
 import { AddSubscriptionForm } from "@/components/subscription/add-subscription-form";
-import { Subscription } from "@/components/subscription/subscription-table";
-import { ChevronLeft } from "lucide-react";
+import type { Subscription } from "@/components/subscription/subscription-table";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
+import { subscriptionApi, subscriptionUtils, Subscription as ApiSubscription } from "@/lib/api";
+import { SubscriptionFormValues } from "@/components/subscription/add-subscription-form";
+// Use utility function for mapping API subscription to component format
+const mapApiSubscriptionToComponent = (apiSub: ApiSubscription): Subscription => {
+  return subscriptionUtils.apiToComponent(apiSub);
+};
 
-// Mock data - this would normally come from an API
-const mockSubscriptions: Subscription[] = [
-  {
-    id: "1",
-    name: "Netflix",
-    amount: 15.99,
-    billingCycle: "monthly",
-    nextBillingDate: new Date(2023, 5, 15),
-    category: "Entertainment",
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "Spotify",
-    amount: 9.99,
-    billingCycle: "monthly",
-    nextBillingDate: new Date(2023, 5, 20),
-    category: "Entertainment",
-    status: "active",
-  },
-];
 
 export function AddSubscriptionPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const isEditMode = Boolean(id);
-
   useEffect(() => {
-    // Simulate API call to fetch subscription data if in edit mode
-    if (isEditMode) {
-      // Simulate API delay
-      const timer = setTimeout(() => {
-        const found = mockSubscriptions.find(sub => sub.id === id);
-        setSubscription(found || null);
+    const loadSubscription = async () => {
+      if (isEditMode && id) {
+        try {
+          setIsLoading(true);
+          setError(null);
+          const apiSubscription = await subscriptionApi.getById(id);
+          const componentSubscription = mapApiSubscriptionToComponent(apiSubscription);
+          setSubscription(componentSubscription);
+        } catch (err: any) {
+          setError(err.response?.data?.message || 'Failed to load subscription');
+          console.error('Error loading subscription:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
         setIsLoading(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    } else {
-      setIsLoading(false);
-    }
+      }
+    };
+
+    loadSubscription();
   }, [id, isEditMode]);
 
-  const handleSubmit = async (data: any) => {
-    // Simulate API call to save or update subscription
-    console.log("Submitting subscription:", data);
+  const handleSubmit = async (formData: SubscriptionFormValues) => {
+    try {
+      // Convert form data to structured API format using utility
+      const apiData = subscriptionUtils.formDataToApi(formData);
 
-    // Wait a bit to simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Redirect back to subscriptions page
-    navigate("/dashboard");
+      if (isEditMode && id) {
+        await subscriptionApi.update(id, apiData);
+      } else {
+        await subscriptionApi.create(apiData);
+      }
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to save subscription');
+      console.error('Error saving subscription:', err);
+    }
   };
+
+  // (removed) legacy helper left intentionally blank; using form's billing_cycle_days directly
 
   const handleCancel = () => {
     navigate(-1);
@@ -126,6 +127,12 @@ export function AddSubscriptionPage() {
           </div>
 
           <div className="bg-card rounded-lg border shadow-sm p-6">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
+
             <AddSubscriptionForm
               subscription={subscription || undefined}
               onSubmit={handleSubmit}

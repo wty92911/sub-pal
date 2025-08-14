@@ -8,12 +8,14 @@ use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod config;
+mod middleware;
 mod models;
 mod routes;
 mod services;
 mod utils;
 
 use config::create_pool;
+use middleware::request_logger;
 use routes::api_routes;
 
 #[derive(Parser)]
@@ -100,15 +102,16 @@ async fn main() {
         .allow_headers(allowed_headers)
         .allow_credentials(true);
 
-    // Build application with routes
+    // Build application with routes and middleware
     let app = Router::new()
         .nest("/api/v1", api_routes())
         .with_state(pool)
         .layer(cors)
-        .layer(TraceLayer::new_for_http());
+        .layer(TraceLayer::new_for_http())
+        .layer(axum::middleware::from_fn(request_logger));
 
     // Start server
-    let addr = SocketAddr::from(([127, 0, 0, 1], args.port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], args.port));
     tracing::info!("listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();

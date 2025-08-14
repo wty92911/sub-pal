@@ -34,6 +34,7 @@
   - [x] Error handling
   - [x] Token storage
 - [x] Implement authenticated routes with guards
+- [x] **API Integration** - Connect frontend auth to backend API
 <!-- - [ ] Add user profile management UI -->
 
 ## Upcoming Tasks (Phase 2)
@@ -45,16 +46,17 @@
 - [x] Implement subscription cycle calculations
 
 ### Subscription Management Frontend
-- [ ] Create subscription listing component
-- [ ] Build subscription form component
-- [ ] Implement subscription filtering and sorting
-- [ ] Add subscription details view
+- [x] Create subscription listing component
+- [x] Build subscription form component
+- [x] Implement subscription filtering and sorting
+- [x] Add subscription details view
+- [x] **API Integration** - Connect frontend subscription components to backend API
 
 ## Task Status
-- **In Progress**: Subscription Management Frontend
-- **Next**: Statistics and Reporting Backend
+- **In Progress**: Statistics and Reporting Backend
+- **Next**: Statistics and Reporting Frontend
 - **Blocked**: None
-- **Completed**: Database setup, Backend Authentication, Frontend Authentication, Subscription Management Backend
+- **Completed**: Database setup, Backend Authentication, Frontend Authentication, Subscription Management Backend, Subscription Management Frontend, API Integration
 
 ## Implementation Notes
 
@@ -64,3 +66,23 @@
 - Created CRUD API with validation for subscriptions and payment records
 - Implemented billing cycle calculations for different subscription types (monthly, yearly, weekly, custom)
 - Added metrics calculations for monthly and yearly totals
+
+### API Integration (COMPLETED)
+- Fixed backend route syntax for Axum v0.8 compatibility
+- Updated frontend auth context to use real API calls instead of mock data
+- Implemented proper API client with authentication interceptors
+- Added subscription API methods for CRUD operations
+- Created mapping functions to handle type conversions between frontend and backend
+- Fixed backend model to skip ID field during deserialization for create operations
+- Updated frontend components to use real API data instead of mock data
+- Added proper error handling and loading states
+- Both backend (port 3000) and frontend (port 5173) are now running and communicating
+
+### API Endpoints Working
+- POST /api/v1/auth/register - User registration
+- POST /api/v1/auth/login - User authentication
+- GET /api/v1/users/me - Get current user
+- GET /api/v1/subscriptions - List user subscriptions
+- POST /api/v1/subscriptions - Create new subscription
+- PUT /api/v1/subscriptions/{id} - Update subscription
+- DELETE /api/v1/subscriptions/{id} - Delete subscription

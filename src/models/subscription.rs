@@ -7,6 +7,7 @@ use uuid::Uuid;
 /// Subscription model representing a subscription in the system
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Subscription {
+    #[serde(skip_deserializing)]
     pub id: Uuid,
 
     // user_id is reset by current user
@@ -53,7 +54,7 @@ pub enum SubscriptionStatus {
 impl SubscriptionStatus {
     pub fn as_str(&self) -> &'static str {
         match self {
-            SubscriptionStatus::Active => "active",
+            SubscriptionStatus::Active => "Active",
             SubscriptionStatus::Paused => "paused",
             SubscriptionStatus::Cancelled => "cancelled",
         }
@@ -135,9 +136,17 @@ impl From<String> for Currency {
 
 impl Subscription {
     /// Calculate the next billing date based on the current date and billing cycle
-    pub fn calculate_next_billing_date(&self, current_date: NaiveDate) -> NaiveDate {
-        current_date
-            .checked_add_signed(chrono::Duration::days(self.billing_cycle_days as i64))
-            .unwrap_or(current_date)
+    pub fn calculate_next_billing_date(
+        &self,
+        start_date: NaiveDate,
+        current_date: NaiveDate,
+    ) -> NaiveDate {
+        let mut next_billing_date = start_date;
+        while next_billing_date < current_date {
+            next_billing_date = next_billing_date
+                .checked_add_signed(chrono::Duration::days(self.billing_cycle_days as i64))
+                .unwrap_or(start_date);
+        }
+        next_billing_date
     }
 }

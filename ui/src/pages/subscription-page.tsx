@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/subscription/header";
 import { Navigation } from "@/components/subscription/navigation";
@@ -6,97 +6,57 @@ import { StatsCards } from "@/components/subscription/stats-cards";
 import { SubscriptionTable, Subscription } from "@/components/subscription/subscription-table";
 import { SubscriptionCards } from "@/components/subscription/subscription-cards";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Filter, Plus } from "lucide-react";
+import { subscriptionApi, Subscription as ApiSubscription, subscriptionUtils } from "@/lib/api";
+import type { CreateSubscriptionRequest, SubscriptionCurrency, SubscriptionStatus } from "@/lib/api-types";
+import { SubscriptionFormValues } from "@/components/subscription/add-subscription-form";
 
-// Mock data for demonstration
-const mockSubscriptions: Subscription[] = [
-  {
-    id: "1",
-    name: "Netflix",
-    amount: 15.99,
-    currency: "USD",
-    billingCycle: "monthly",
-    nextBillingDate: new Date(2023, 5, 15),
-    category: "Entertainment",
-    status: "active",
-    color: "#e50914",
-  },
-  {
-    id: "2",
-    name: "Spotify",
-    amount: 9.99,
-    currency: "USD",
-    billingCycle: "monthly",
-    nextBillingDate: new Date(2023, 5, 20),
-    category: "Entertainment",
-    status: "active",
-    color: "#1db954",
-  },
-  {
-    id: "3",
-    name: "Adobe Creative Cloud",
-    amount: 52.99,
-    currency: "USD",
-    billingCycle: "monthly",
-    nextBillingDate: new Date(2023, 5, 5),
-    category: "Software",
-    status: "active",
-    color: "#1d4ed8",
-  },
-  {
-    id: "4",
-    name: "Amazon Prime",
-    amount: 139,
-    currency: "USD",
-    billingCycle: "yearly",
-    nextBillingDate: new Date(2023, 11, 12),
-    category: "Shopping",
-    status: "active",
-    color: "#f59e0b",
-  },
-  {
-    id: "5",
-    name: "Gym Membership",
-    amount: 35,
-    currency: "USD",
-    billingCycle: "monthly",
-    nextBillingDate: new Date(2023, 6, 1),
-    category: "Health",
-    status: "paused",
-    color: "#8b5cf6",
-  },
-  {
-    id: "6",
-    name: "Disney+",
-    amount: 7.99,
-    currency: "USD",
-    billingCycle: "monthly",
-    nextBillingDate: new Date(2023, 5, 25),
-    category: "Entertainment",
-    status: "trial",
-    color: "#ef4444",
-  },
-  {
-    id: "7",
-    name: "New York Times",
-    amount: 4.99,
-    currency: "USD",
-    billingCycle: "monthly",
-    nextBillingDate: new Date(2023, 6, 3),
-    category: "News",
-    status: "cancelled",
-    color: "#1d4ed8",
+// Use utility function for mapping API subscription to component format
+const mapApiSubscriptionToComponent = (apiSub: ApiSubscription): Subscription => {
+  return subscriptionUtils.apiToComponent(apiSub);
+};
+
+const getBillingCycleDays = (billingCycle: string): number => {
+  switch (billingCycle) {
+    case "weekly": return 7;
+    case "monthly": return 30;
+    case "quarterly": return 90;
+    case "yearly": return 365;
+    default: return 30;
   }
-];
+};
 
 export function SubscriptionPage() {
   const navigate = useNavigate();
-  const [subscriptions, setSubscriptions] = useState(mockSubscriptions);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+
+  // Load subscriptions on component mount
+  useEffect(() => {
+    loadSubscriptions();
+  }, []);
+
+  const loadSubscriptions = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const apiData = await subscriptionApi.getAll();
+      console.log('loadSubscriptions, all data:', apiData);
+      const mappedData = apiData.map(mapApiSubscriptionToComponent);
+      setSubscriptions(mappedData);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to load subscriptions');
+      console.error('Error loading subscriptions:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle filters
   const filteredSubscriptions = subscriptions.filter(sub => {
@@ -106,28 +66,91 @@ export function SubscriptionPage() {
   });
 
   // Get unique categories for filter
-  const categories = [...new Set(subscriptions.map(sub => sub.category))];
+  const categories = [...new Set(subscriptions.map(sub => sub.category))].filter(Boolean) as string[];
 
   // Handlers
   const handleEdit = (id: string) => {
     navigate(`/subscriptions/edit/${id}`);
   };
 
-  const handleDelete = (id: string) => {
-    setSubscriptions(subscriptions.filter(sub => sub.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await subscriptionApi.delete(id);
+      setSubscriptions(subscriptions.filter(sub => sub.id !== id));
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to delete subscription');
+      console.error('Error deleting subscription:', err);
+    }
   };
 
   const handleAddNew = () => {
     navigate('/subscriptions/new');
   };
 
-  const handleToggleStatus = (id: string) => {
-    setSubscriptions(subscriptions.map(sub =>
-      sub.id === id
-        ? { ...sub, status: sub.status === "active" ? "paused" : "active" }
-        : sub
-    ));
+  const handleToggleStatus = async (id: string) => {
+    try {
+      const subscription = subscriptions.find(sub => sub.id === id);
+      if (!subscription) return;
+
+      // Convert component status to API status and create proper update request
+      const newStatus = subscription.status === "Active" ? "Paused" : "Active";
+      console.log("newStatus, subscription", newStatus, subscription);
+      const formData = {
+        name: subscription.name,
+        description: subscription.description,
+        amount: subscription.amount.toString(),
+        currency: subscription.currency as SubscriptionCurrency,
+        billing_cycle: subscription.billingCycle,
+        category: subscription.category,
+        status: newStatus as SubscriptionStatus,
+        start_date: subscription.startDate?.toISOString().split('T')[0],
+        color: subscription.color,
+      } as SubscriptionFormValues;
+      const updateData = subscriptionUtils.formDataToApi(formData);
+
+      const updatedApiSubscription = await subscriptionApi.update(id, updateData);
+      console.log("updatedApiSubscription", updatedApiSubscription);
+      const updatedSubscription = mapApiSubscriptionToComponent(updatedApiSubscription);
+
+      setSubscriptions(subscriptions.map(sub =>
+        sub.id === id ? updatedSubscription : sub
+      ));
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to update subscription status');
+      console.error('Error updating subscription status:', err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-16">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-muted-foreground">Loading subscriptions...</p>
+          </div>
+        </main>
+        <Navigation />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-16">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={loadSubscriptions}>Retry</Button>
+            </div>
+          </div>
+        </main>
+        <Navigation />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -190,39 +213,33 @@ export function SubscriptionPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
-              <Select
-                value={statusFilter || ""}
-                onValueChange={(value) => setStatusFilter(value || null)}
-              >
+              <Select value={statusFilter || ""} onValueChange={(value) => setStatusFilter(value || null)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
+                  <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                  <SelectItem value="trial">Trial</SelectItem>
+                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                  <SelectItem value="Trial">Trial</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Category</label>
-              <Select
-                value={categoryFilter || ""}
-                onValueChange={(value) => setCategoryFilter(value || null)}
-              >
+              <Select value={categoryFilter || ""} onValueChange={(value) => setCategoryFilter(value || null)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Categories" />
+                  <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="">All categories</SelectItem>
                   {categories.map((category) => (
-                    <SelectItem key={category} value={category || ""}>
+                    <SelectItem key={category} value={category}>
                       {category}
                     </SelectItem>
                   ))}
@@ -230,7 +247,7 @@ export function SubscriptionPage() {
               </Select>
             </div>
 
-            <div className="flex justify-between pt-4">
+            <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -238,7 +255,7 @@ export function SubscriptionPage() {
                   setCategoryFilter(null);
                 }}
               >
-                Reset
+                Clear Filters
               </Button>
               <Button onClick={() => setFilterOpen(false)}>Apply</Button>
             </div>

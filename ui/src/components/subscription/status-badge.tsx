@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type SubscriptionStatus = "active" | "paused" | "cancelled" | "trial";
+type SubscriptionStatus = "Active" | "paused" | "cancelled" | "trial";
 
 interface StatusBadgeProps {
   status: SubscriptionStatus;

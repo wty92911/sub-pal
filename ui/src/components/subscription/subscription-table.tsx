@@ -2,17 +2,16 @@ import { Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { format } from 'date-fns';
-
 export interface Subscription {
   id: string;
   name: string;
   description?: string;
-  amount: number;
+  amount: string;
   currency?: string;
   billingCycle: "monthly" | "yearly" | "quarterly" | "weekly" | "daily";
   nextBillingDate: Date;
   startDate?: Date;
-  status: "active" | "paused" | "cancelled" | "trial";
+  status: "Active" | "Paused" | "Cancelled" | "Trial";
   category?: string;
   color?: string;
 }
@@ -25,11 +24,11 @@ interface SubscriptionTableProps {
 }
 
 export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleStatus }: SubscriptionTableProps) {
-  const formatCurrency = (amount: number, currency?: string) => {
+  const formatCurrency = (amount: string, currency?: string) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency || 'USD',
-    }).format(amount);
+    }).format(Number(amount));
   };
 
   const formatBillingCycle = (billingCycle: string) => {
@@ -102,9 +101,9 @@ export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleSta
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <Toggle
-                  checked={subscription.status === 'active'}
+                  checked={subscription.status === "Active"}
                   onCheckedChange={() => onToggleStatus(subscription.id)}
-                  disabled={subscription.status === 'cancelled' || subscription.status === 'trial'}
+                  disabled={subscription.status === "Cancelled" || subscription.status === "Trial"}
                 />
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

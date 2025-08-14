@@ -12,11 +12,11 @@ interface SubscriptionCardsProps {
 }
 
 export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleStatus }: SubscriptionCardsProps) {
-  const formatCurrency = (amount: number, currency?: string) => {
+  const formatCurrency = (amount: string, currency?: string) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency || 'USD',
-    }).format(amount);
+    }).format(Number(amount));
   };
 
   const formatBillingCycle = (billingCycle: string) => {
@@ -46,9 +46,9 @@ export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleSta
             </div>
             <div className="flex items-center space-x-2">
               <Toggle
-                checked={subscription.status === 'active'}
+                checked={subscription.status === "Active"}
                 onCheckedChange={() => onToggleStatus(subscription.id)}
-                disabled={subscription.status === 'cancelled' || subscription.status === 'trial'}
+                disabled={subscription.status === "Cancelled" || subscription.status === "Trial"}
               />
             </div>
           </div>

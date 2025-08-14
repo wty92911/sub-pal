@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '../../lib/auth-context';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { AlertCircle } from 'lucide-react';
 
 // Form validation schema
 const loginSchema = z.object({
@@ -14,32 +15,50 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
-  const { login } = useAuth();
+  const { login, error: authError, clearError, user } = useAuth();
   const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
 
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
+  // Debug: Log errors whenever they change
+  useEffect(() => {
+    console.log('Auth Error:', authError);
+    console.log('Form Error:', formError);
+  }, [authError, formError]);
+
   const onSubmit = async (data: LoginFormValues) => {
-    setIsSubmitting(true);
-    setError(null);
+    // Clear previous errors
+    setFormError(null);
+    clearError();
 
     try {
       await login(data.email, data.password);
-      navigate('/dashboard');
+      // If login is successful, the user state will be updated
+      // and the above useEffect will handle the redirection
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Login failed. Please check your credentials.');
-    } finally {
-      setIsSubmitting(false);
+      console.log('Login error caught in form:', err);
+      // Set form error from the caught error message
+      setFormError(err.message || 'Login failed. Please check your credentials.');
     }
   };
+
+
+  // Display either auth context error or form error
+  const displayError = authError || formError;
 
   return (
     <div className="mx-auto w-full max-w-md space-y-6 p-6">
@@ -48,9 +67,13 @@ export function LoginForm() {
         <p className="text-gray-500 dark:text-gray-400">Enter your credentials to access your account</p>
       </div>
 
-      {error && (
-        <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-          {error}
+      {displayError && (
+        <div className="rounded-md bg-red-50 border border-red-200 p-4 text-sm text-red-600 flex items-start">
+          <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0 text-red-500" />
+          <div>
+            <p className="font-medium">Login Error</p>
+            <p>{displayError}</p>
+          </div>
         </div>
       )}
 
@@ -76,9 +99,9 @@ export function LoginForm() {
             <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               Password
             </label>
-            <a href="/forgot-password" className="text-sm text-primary hover:underline">
+            <Link to="/forgot-password" className="text-sm text-primary hover:underline">
               Forgot password?
-            </a>
+            </Link>
           </div>
           <input
             {...register('password')}
@@ -109,9 +132,9 @@ export function LoginForm() {
 
       <div className="text-center text-sm">
         Don't have an account?{' '}
-        <a href="/register" className="text-primary hover:underline">
+        <Link to="/register" className="text-primary hover:underline">
           Register
-        </a>
+        </Link>
       </div>
     </div>
   );

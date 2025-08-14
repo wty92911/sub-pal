@@ -43,7 +43,7 @@ pub fn success<T: Serialize>(data: T) -> Json<ApiResponse<T>> {
 pub enum AppError {
     BadRequest(String),
     Unauthorized(String),
-    Forbidden(String),
+    _Forbidden(String),
     NotFound(String),
     Conflict(String),
     InternalServerError(String),
@@ -68,7 +68,7 @@ impl IntoResponse for AppError {
                 message,
                 None,
             ),
-            AppError::Forbidden(message) => (
+            AppError::_Forbidden(message) => (
                 StatusCode::FORBIDDEN,
                 "FORBIDDEN".to_string(),
                 message,

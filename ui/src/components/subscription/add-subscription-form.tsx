@@ -15,15 +15,16 @@ const colorOptions = [
   { value: '#ef4444', label: 'Orange', class: 'bg-orange-500' },
 ];
 
-interface SubscriptionFormValues {
+export interface SubscriptionFormValues {
   name: string;
   description: string;
   amount: string;
   currency: string;
-  billing_cycle_days: string;
+  billing_cycle: string;
   start_date: string;
   category: string;
   color: string;
+  status: string;
 }
 
 interface AddSubscriptionFormProps {
@@ -38,11 +39,12 @@ export function AddSubscriptionForm({ subscription, onSubmit, onCancel }: AddSub
     name: subscription?.name || "",
     description: subscription?.description || "",
     amount: subscription?.amount?.toString() || "",
-    currency: "USD",
-    billing_cycle_days: "30",
-    start_date: subscription?.nextBillingDate ? subscription.nextBillingDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    currency: subscription?.currency || "USD",
+    billing_cycle: subscription?.billingCycle || "monthly",
+    start_date: subscription?.startDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
     category: subscription?.category || "",
-    color: "#1d4ed8",
+    color: subscription?.color || "#1d4ed8",
+    status: subscription?.status || "Active",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof SubscriptionFormValues, string>>>({});
@@ -120,12 +122,10 @@ export function AddSubscriptionForm({ subscription, onSubmit, onCancel }: AddSub
               <SelectTrigger className="w-20 rounded-r-none">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="USD">USD</SelectItem>
-                <SelectItem value="EUR">EUR</SelectItem>
-                <SelectItem value="GBP">GBP</SelectItem>
-                <SelectItem value="CNY">CNY</SelectItem>
-              </SelectContent>
+             <SelectContent>
+               <SelectItem value="USD">USD</SelectItem>
+               <SelectItem value="CNY">CNY</SelectItem>
+             </SelectContent>
             </Select>
             <Input
               id="amount"
@@ -148,17 +148,17 @@ export function AddSubscriptionForm({ subscription, onSubmit, onCancel }: AddSub
         <div>
           <Label htmlFor="billing_cycle">Billing Cycle *</Label>
           <Select
-            value={formData.billing_cycle_days}
-            onValueChange={(value) => handleInputChange('billing_cycle_days', value)}
+            value={formData.billing_cycle}
+            onValueChange={(value) => handleInputChange('billing_cycle', value)}
           >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7">Weekly (7 days)</SelectItem>
-              <SelectItem value="30">Monthly (30 days)</SelectItem>
-              <SelectItem value="90">Quarterly (90 days)</SelectItem>
-              <SelectItem value="365">Yearly (365 days)</SelectItem>
+              <SelectItem value="weekly">Weekly (7 days)</SelectItem>
+              <SelectItem value="monthly">Monthly (30 days)</SelectItem>
+              <SelectItem value="quarterly">Quarterly (90 days)</SelectItem>
+              <SelectItem value="yearly">Yearly (365 days)</SelectItem>
             </SelectContent>
           </Select>
         </div>

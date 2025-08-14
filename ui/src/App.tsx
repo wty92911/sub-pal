@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './lib/auth-context';
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './lib/auth-context';
 import { LoginPage } from './pages/login-page';
 import { RegisterPage } from './pages/register-page';
 import { DashboardPage } from './pages/dashboard-page';
@@ -8,6 +8,25 @@ import { SubscriptionPage } from './pages/subscription-page';
 import { AddSubscriptionPage } from './pages/add-subscription-page';
 import { StatisticsPage } from './pages/statistics-page';
 import { ProtectedRoute } from './components/auth/protected-route';
+
+// Root redirect component that handles authentication state
+function RootRedirect() {
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (user && location.pathname === '/') {
+        navigate('/dashboard');
+      } else if (!user && location.pathname === '/') {
+        navigate('/login');
+      }
+    }
+  }, [user, isLoading, navigate, location.pathname]);
+
+  return null;
+}
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -33,8 +52,11 @@ function App() {
                 <Route path="/legacy-dashboard" element={<DashboardPage />} />
               </Route>
 
-              {/* Redirect to dashboard if authenticated, otherwise to login */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              {/* Root path handler */}
+              <Route path="/" element={<RootRedirect />} />
+
+              {/* Catch-all route for 404s */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Router>
         </AuthProvider>

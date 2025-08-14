@@ -7,16 +7,19 @@ interface StatsCardsProps {
 
 export function StatsCards({ subscriptions }: StatsCardsProps) {
   const totalSubscriptions = subscriptions.length;
-  const activeSubscriptions = subscriptions.filter(sub => sub.status === 'active');
+  const activeSubscriptions = subscriptions.filter(sub => sub.status === "Active");
 
   const monthlyTotal = activeSubscriptions.reduce((total, sub) => {
-    const monthlyAmount = sub.billingCycle === 'monthly' ? sub.amount :
-                         sub.billingCycle === 'yearly' ? sub.amount / 12 :
-                         sub.billingCycle === 'weekly' ? sub.amount * 4.33 :
-                         sub.billingCycle === 'quarterly' ? sub.amount / 3 :
-                         sub.amount * (30 / 30); // daily approximation
-    return total + monthlyAmount;
-  }, 0);
+    console.log("sub.amount, type", sub.amount, typeof sub.amount);
+    const monthlyAmount = sub.billingCycle === "monthly" ? Number(sub.amount) :
+                         sub.billingCycle === "yearly" ? Number(sub.amount) / 12 :
+                         sub.billingCycle === "weekly" ? Number(sub.amount) * 4.33 :
+                         sub.billingCycle === "quarterly" ? Number(sub.amount) / 3 :
+                         Number(sub.amount) * (30 / 30); // daily approximation
+    // console.log("monthlyAmount", monthlyAmount);
+    return total + Number(monthlyAmount);
+  }, Number(0));
+  console.log("monthlyTotal", typeof monthlyTotal);
 
   const yearlyTotal = monthlyTotal * 12;
 
