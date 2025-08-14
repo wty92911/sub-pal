@@ -40,7 +40,7 @@ export function RegisterForm() {
       await registerUser(data.email, data.password, data.name);
       navigate('/login');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.error?.message || 'Registration failed. Please try again. err: ' + err);
     } finally {
       setIsSubmitting(false);
     }

@@ -78,7 +78,10 @@ async fn main() {
     let pool = create_pool().await.expect("Failed to create database pool");
 
     // Configure CORS
-    let allowed_origins = AllowOrigin::list(vec!["http://localhost:5173".parse().unwrap()]);
+    let allowed_origins = AllowOrigin::list(vec![
+        "http://localhost:5173".parse().unwrap(),
+        "http://192.168.31.123:5173".parse().unwrap(),
+    ]);
 
     // Define allowed methods
     let allowed_methods = vec![

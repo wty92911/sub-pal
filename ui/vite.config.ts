@@ -28,6 +28,13 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://192.168.31.123:3000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   // Vitest configuration
   test: {
