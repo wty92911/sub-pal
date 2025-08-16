@@ -75,7 +75,7 @@ export function AddSubscriptionPage() {
     return (
       <div className="flex min-h-screen flex-col">
         <Header />
-        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-1 items-center justify-center py-10">
+        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-1 items-center justify-center py-10 pb-20 lg:pb-10">
           <div className="w-full max-w-md space-y-6">
             <div className="space-y-2 text-center">
               <h1 className="text-2xl font-bold">Loading...</h1>
@@ -93,7 +93,7 @@ export function AddSubscriptionPage() {
     return (
       <div className="flex min-h-screen flex-col">
         <Header />
-        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-1 items-center justify-center py-10">
+        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-1 items-center justify-center py-10 pb-20 lg:pb-10">
           <div className="w-full max-w-md space-y-6">
             <div className="space-y-2 text-center">
               <h1 className="text-2xl font-bold">Subscription Not Found</h1>
@@ -113,7 +113,7 @@ export function AddSubscriptionPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-4 mb-6">
             <Button
