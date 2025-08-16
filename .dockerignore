@@ -1,0 +1,30 @@
+# Docker ignore file
+target/
+ui/node_modules/
+ui/dist/
+.git/
+.gitignore
+README.md
+.env*
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Development files
+docs/
+examples/
+fixtures/
+memory-bank/
+specs/
+logs/
+backups/
+ssl/
+
+# CI/CD
+.github/
+_github/

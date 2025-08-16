@@ -81,6 +81,7 @@ async fn main() {
     let allowed_origins = AllowOrigin::list(vec![
         "http://localhost:5173".parse().unwrap(),
         "http://192.168.31.123:5173".parse().unwrap(),
+        "http://wty92911.top:5173".parse().unwrap(),
     ]);
 
     // Define allowed methods
