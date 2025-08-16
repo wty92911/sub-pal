@@ -28,6 +28,8 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    host: true,
+    allowedHosts: ['wty92911.top'],
     proxy: {
       '/api': {
         target: 'http://192.168.31.123:3000',
