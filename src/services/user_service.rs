@@ -19,7 +19,8 @@ impl UserService {
     /// Register a new user
     pub async fn register(&self, request: RegisterRequest) -> Result<UserResponse, AppError> {
         // Check if user already exists
-        let existing_user = sqlx::query!("SELECT id FROM users WHERE email = $1", request.email)
+        let existing_user = sqlx::query("SELECT id FROM users WHERE email = $1")
+            .bind(&request.email)
             .fetch_optional(&self.pool)
             .await
             .map_err(|e| AppError::InternalServerError(format!("Database error: {e}")))?;
@@ -43,32 +44,30 @@ impl UserService {
             .map_err(|e| AppError::InternalServerError(format!("Transaction error: {e}")))?;
 
         // Insert user
-        let user = sqlx::query_as!(
-            crate::models::User,
+        let user = sqlx::query_as::<_, crate::models::User>(
             r#"
             INSERT INTO users (email, password_hash)
             VALUES ($1, $2)
             RETURNING id, email, password_hash, created_at, updated_at
             "#,
-            request.email,
-            password_hash
         )
+        .bind(&request.email)
+        .bind(&password_hash)
         .fetch_one(&mut *tx)
         .await
         .map_err(|e| AppError::InternalServerError(format!("User creation error: {e}")))?;
 
         // Insert user profile
-        let profile = sqlx::query_as!(
-            crate::models::UserProfile,
+        let profile = sqlx::query_as::<_, crate::models::UserProfile>(
             r#"
             INSERT INTO user_profiles (user_id, name, preferences)
             VALUES ($1, $2, $3)
             RETURNING id, user_id, name, preferences, created_at, updated_at
             "#,
-            user.id,
-            request.name,
-            serde_json::Value::Object(serde_json::Map::new())
         )
+        .bind(user.id)
+        .bind(&request.name)
+        .bind(serde_json::Value::Object(serde_json::Map::new()))
         .fetch_one(&mut *tx)
         .await
         .map_err(|e| AppError::InternalServerError(format!("Profile creation error: {e}")))?;
@@ -85,11 +84,10 @@ impl UserService {
     /// Login a user
     pub async fn login(&self, request: LoginRequest) -> Result<AuthResponse, AppError> {
         // Find user by email
-        let user = sqlx::query_as!(
-            crate::models::User,
+        let user = sqlx::query_as::<_, crate::models::User>(
             r#"SELECT id, email, password_hash, created_at, updated_at FROM users WHERE email = $1"#,
-            request.email
         )
+        .bind(&request.email)
         .fetch_optional(&self.pool)
         .await
         .map_err(|e| AppError::InternalServerError(format!("Database error: {e}")))?
@@ -107,11 +105,10 @@ impl UserService {
         }
 
         // Get user profile
-        let profile = sqlx::query_as!(
-            crate::models::UserProfile,
+        let profile = sqlx::query_as::<_, crate::models::UserProfile>(
             r#"SELECT id, user_id, name, preferences, created_at, updated_at FROM user_profiles WHERE user_id = $1"#,
-            user.id
         )
+        .bind(user.id)
         .fetch_optional(&self.pool)
         .await
         .map_err(|e| AppError::InternalServerError(format!("Database error: {e}")))?;
@@ -135,22 +132,20 @@ impl UserService {
     /// Get user by ID
     pub async fn get_user_by_id(&self, user_id: Uuid) -> Result<UserResponse, AppError> {
         // Get user
-        let user = sqlx::query_as!(
-            crate::models::User,
+        let user = sqlx::query_as::<_, crate::models::User>(
             r#"SELECT id, email, password_hash, created_at, updated_at FROM users WHERE id = $1"#,
-            user_id
         )
+        .bind(user_id)
         .fetch_optional(&self.pool)
         .await
         .map_err(|e| AppError::InternalServerError(format!("Database error: {e}")))?
         .ok_or_else(|| AppError::NotFound(format!("User with ID {user_id} not found")))?;
 
         // Get user profile
-        let profile = sqlx::query_as!(
-            crate::models::UserProfile,
+        let profile = sqlx::query_as::<_, crate::models::UserProfile>(
             r#"SELECT id, user_id, name, preferences, created_at, updated_at FROM user_profiles WHERE user_id = $1"#,
-            user_id
         )
+        .bind(user_id)
         .fetch_optional(&self.pool)
         .await
         .map_err(|e| AppError::InternalServerError(format!("Database error: {e}")))?;
