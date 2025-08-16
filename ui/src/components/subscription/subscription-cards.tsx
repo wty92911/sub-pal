@@ -23,7 +23,7 @@ export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleSta
   return (
     <div className="space-y-4">
       {subscriptions.map((subscription) => (
-        <div key={subscription.id} className="bg-white rounded-lg shadow p-4">
+        <div key={subscription.id} className="bg-card text-card-foreground rounded-lg shadow p-4 border">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <div
@@ -33,8 +33,8 @@ export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleSta
                 {subscription.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">{subscription.name}</h3>
-                <p className="text-sm text-gray-500">{subscription.category}</p>
+                <h3 className="font-medium">{subscription.name}</h3>
+                <p className="text-sm text-muted-foreground">{subscription.category}</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -48,13 +48,13 @@ export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleSta
 
           <div className="grid grid-cols-2 gap-4 text-sm mb-4">
             <div>
-              <p className="text-gray-500">Price</p>
+              <p className="text-muted-foreground">Price</p>
               <p className="font-medium">
                 {formatCurrency(subscription.amount, subscription.currency)}/{formatBillingCycle(subscription.billingCycle)}
               </p>
             </div>
             <div>
-              <p className="text-gray-500">Next Billing</p>
+              <p className="text-muted-foreground">Next Billing</p>
               <p className="font-medium">
                 {format(new Date(subscription.nextBillingDate), 'MMM dd, yyyy')}
               </p>
@@ -66,7 +66,7 @@ export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleSta
               variant="ghost"
               size="sm"
               onClick={() => onEdit(subscription.id)}
-              className="text-blue-600 hover:bg-blue-50"
+              className="text-primary hover:bg-accent"
             >
               <Edit className="w-4 h-4 mr-1" />
               Edit
@@ -75,7 +75,7 @@ export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleSta
               variant="ghost"
               size="sm"
               onClick={() => onDelete(subscription.id)}
-              className="text-red-600 hover:bg-red-50"
+              className="text-destructive hover:bg-destructive/10"
             >
               <Trash2 className="w-4 h-4 mr-1" />
               Delete

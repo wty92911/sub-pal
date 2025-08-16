@@ -32,25 +32,25 @@ export function StatsCards({ subscriptions }: StatsCardsProps) {
       name: 'Total Subscriptions',
       value: totalSubscriptions.toString(),
       icon: CreditCard,
-      color: 'bg-blue-100 text-blue-600',
+      color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
     },
     {
       name: 'Monthly Cost',
       value: `$${monthlyTotal.toFixed(2)}`,
       icon: DollarSign,
-      color: 'bg-green-100 text-green-600',
+      color: 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400',
     },
     {
       name: 'Yearly Cost',
       value: `$${yearlyTotal.toFixed(2)}`,
       icon: Calendar,
-      color: 'bg-purple-100 text-purple-600',
+      color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400',
     },
     {
       name: 'Expiring Soon',
       value: expiringSoon.toString(),
       icon: AlertCircle,
-      color: 'bg-orange-100 text-orange-600',
+      color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400',
     },
   ];
 
@@ -59,7 +59,7 @@ export function StatsCards({ subscriptions }: StatsCardsProps) {
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
-          <div key={stat.name} className="bg-white rounded-lg shadow p-4 lg:p-6">
+          <div key={stat.name} className="bg-card text-card-foreground rounded-lg shadow p-4 lg:p-6 border">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${stat.color}`}>
@@ -67,8 +67,8 @@ export function StatsCards({ subscriptions }: StatsCardsProps) {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">{stat.name}</p>
-                <p className="text-xl lg:text-2xl font-semibold text-gray-900">{stat.value}</p>
+                <p className="text-sm font-medium text-muted-foreground">{stat.name}</p>
+                <p className="text-xl lg:text-2xl font-semibold">{stat.value}</p>
               </div>
             </div>
           </div>
