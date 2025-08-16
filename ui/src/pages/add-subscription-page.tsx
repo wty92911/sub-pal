@@ -3,13 +3,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Header } from "@/components/subscription/header";
 import { Navigation } from "@/components/subscription/navigation";
 import { AddSubscriptionForm } from "@/components/subscription/add-subscription-form";
-import type { Subscription } from "@/components/subscription/subscription-table";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
-import { subscriptionApi, subscriptionUtils, Subscription as ApiSubscription } from "@/lib/api";
-import { SubscriptionFormValues } from "@/components/subscription/add-subscription-form";
+import { subscriptionApi, subscriptionUtils } from "@/lib/api";
+import type { 
+  SubscriptionDisplay, 
+  Subscription as ApiSubscription,
+  SubscriptionFormValues 
+} from "@/types";
+
 // Use utility function for mapping API subscription to component format
-const mapApiSubscriptionToComponent = (apiSub: ApiSubscription): Subscription => {
+const mapApiSubscriptionToComponent = (apiSub: ApiSubscription): SubscriptionDisplay => {
   return subscriptionUtils.apiToComponent(apiSub);
 };
 
@@ -17,7 +21,7 @@ const mapApiSubscriptionToComponent = (apiSub: ApiSubscription): Subscription =>
 export function AddSubscriptionPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionDisplay | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isEditMode = Boolean(id);

@@ -2,14 +2,7 @@ import { Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { format } from 'date-fns';
-import { Subscription } from './subscription-table';
-
-interface SubscriptionCardsProps {
-  subscriptions: Subscription[];
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onToggleStatus: (id: string) => void;
-}
+import type { SubscriptionDisplay, SubscriptionCardsProps } from '@/types';
 
 export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleStatus }: SubscriptionCardsProps) {
   const formatCurrency = (amount: string, currency?: string) => {

@@ -1,9 +1,5 @@
 import { CreditCard, DollarSign, Calendar, AlertCircle } from 'lucide-react';
-import { Subscription } from './subscription-table';
-
-interface StatsCardsProps {
-  subscriptions: Subscription[];
-}
+import type { SubscriptionDisplay, StatsCardsProps } from '@/types';
 
 export function StatsCards({ subscriptions }: StatsCardsProps) {
   const totalSubscriptions = subscriptions.length;

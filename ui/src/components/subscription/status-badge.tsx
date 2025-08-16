@@ -1,11 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-type SubscriptionStatus = "Active" | "paused" | "cancelled" | "trial";
-
-interface StatusBadgeProps {
-  status: SubscriptionStatus;
-}
+import type { StatusBadgeProps, SubscriptionStatus } from '@/types';
 
 const statusConfig = {
   active: { color: "bg-green-100 text-green-800 hover:bg-green-200", label: "Active" },

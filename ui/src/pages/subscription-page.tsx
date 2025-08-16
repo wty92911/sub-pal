@@ -3,23 +3,31 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/subscription/header";
 import { Navigation } from "@/components/subscription/navigation";
 import { StatsCards } from "@/components/subscription/stats-cards";
-import { SubscriptionTable, Subscription } from "@/components/subscription/subscription-table";
+import { SubscriptionTable } from "@/components/subscription/subscription-table";
 import { SubscriptionCards } from "@/components/subscription/subscription-cards";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter, Plus } from "lucide-react";
-import { subscriptionApi, Subscription as ApiSubscription, subscriptionUtils } from "@/lib/api";
-import type { CreateSubscriptionRequest, SubscriptionCurrency, SubscriptionStatus } from "@/lib/api-types";
-import { SubscriptionFormValues } from "@/components/subscription/add-subscription-form";
+import { subscriptionApi, subscriptionUtils } from "@/lib/api";
+import type { 
+  CreateSubscriptionRequest, 
+  SubscriptionCurrency, 
+  SubscriptionStatus,
+  Subscription as ApiSubscription,
+  SubscriptionDisplay,
+  SubscriptionFormValues,
+  BillingCycle
+} from "@/types";
 
 // Use utility function for mapping API subscription to component format
-const mapApiSubscriptionToComponent = (apiSub: ApiSubscription): Subscription => {
+const mapApiSubscriptionToComponent = (apiSub: ApiSubscription): SubscriptionDisplay => {
   return subscriptionUtils.apiToComponent(apiSub);
 };
 
-const getBillingCycleDays = (billingCycle: string): number => {
+const getBillingCycleDays = (billingCycle: BillingCycle): number => {
   switch (billingCycle) {
+    case "daily": return 1;
     case "weekly": return 7;
     case "monthly": return 30;
     case "quarterly": return 90;
@@ -30,7 +38,7 @@ const getBillingCycleDays = (billingCycle: string): number => {
 
 export function SubscriptionPage() {
   const navigate = useNavigate();
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);

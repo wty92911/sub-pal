@@ -4,34 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Subscription } from "./subscription-table";
-
-const colorOptions = [
-  { value: '#e50914', label: 'Red', class: 'bg-red-500' },
-  { value: '#1db954', label: 'Green', class: 'bg-green-500' },
-  { value: '#1d4ed8', label: 'Blue', class: 'bg-blue-500' },
-  { value: '#f59e0b', label: 'Yellow', class: 'bg-yellow-500' },
-  { value: '#8b5cf6', label: 'Purple', class: 'bg-purple-500' },
-  { value: '#ef4444', label: 'Orange', class: 'bg-orange-500' },
-];
-
-export interface SubscriptionFormValues {
-  name: string;
-  description: string;
-  amount: string;
-  currency: string;
-  billing_cycle: string;
-  start_date: string;
-  category: string;
-  color: string;
-  status: string;
-}
-
-interface AddSubscriptionFormProps {
-  subscription?: Subscription;
-  onSubmit: (data: SubscriptionFormValues) => void;
-  onCancel: () => void;
-}
+import type { 
+  SubscriptionFormValues, 
+  AddSubscriptionFormProps 
+} from '@/types';
+import { COLOR_OPTIONS } from '@/types';
 
 export function AddSubscriptionForm({ subscription, onSubmit, onCancel }: AddSubscriptionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -117,7 +94,7 @@ export function AddSubscriptionForm({ subscription, onSubmit, onCancel }: AddSub
           <div className="flex">
             <Select
               value={formData.currency}
-              onValueChange={(value) => handleInputChange('currency', value)}
+              onValueChange={(value: string) => handleInputChange('currency', value)}
             >
               <SelectTrigger className="w-20 rounded-r-none">
                 <SelectValue />
@@ -180,7 +157,7 @@ export function AddSubscriptionForm({ subscription, onSubmit, onCancel }: AddSub
           <Label htmlFor="category">Category</Label>
           <Select
             value={formData.category}
-            onValueChange={(value) => handleInputChange('category', value)}
+            onValueChange={(value: string) => handleInputChange('category', value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
@@ -212,7 +189,7 @@ export function AddSubscriptionForm({ subscription, onSubmit, onCancel }: AddSub
         <div>
           <Label>Color</Label>
           <div className="flex space-x-2 mt-2">
-            {colorOptions.map((color) => (
+            {COLOR_OPTIONS.map((color) => (
               <button
                 key={color.value}
                 type="button"
@@ -233,7 +210,7 @@ export function AddSubscriptionForm({ subscription, onSubmit, onCancel }: AddSub
       <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           onClick={onCancel}
         >
           Cancel

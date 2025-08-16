@@ -2,26 +2,7 @@ import { Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { format } from 'date-fns';
-export interface Subscription {
-  id: string;
-  name: string;
-  description?: string;
-  amount: string;
-  currency?: string;
-  billingCycle: "monthly" | "yearly" | "quarterly" | "weekly" | "daily";
-  nextBillingDate: Date;
-  startDate?: Date;
-  status: "Active" | "Paused" | "Cancelled" | "Trial";
-  category?: string;
-  color?: string;
-}
-
-interface SubscriptionTableProps {
-  subscriptions: Subscription[];
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onToggleStatus: (id: string) => void;
-}
+import type { SubscriptionDisplay, SubscriptionTableProps } from '@/types';
 
 export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleStatus }: SubscriptionTableProps) {
   const formatCurrency = (amount: string, currency?: string) => {

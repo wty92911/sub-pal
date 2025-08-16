@@ -14,8 +14,9 @@ import type {
   ApiUserResponse,
   ApiAuthResponse,
   ApiStatsResponse,
-} from './api-types';
-import { SubscriptionFormValues } from '@/components/subscription/add-subscription-form';
+  SubscriptionFormValues,
+  BillingCycle
+} from '@/types';
 
 // ======== API Configuration ========
 
@@ -173,8 +174,9 @@ export const subscriptionApi = {
 
 // ======== Data Transformation Utilities ========
 
-const getBillingCycleDays = (billingCycle: string): number => {
+const getBillingCycleDays = (billingCycle: BillingCycle): number => {
   switch (billingCycle) {
+    case "daily": return 1;
     case "weekly": return 7;
     case "monthly": return 30;
     case "quarterly": return 90;
@@ -207,7 +209,8 @@ export const subscriptionUtils = {
    */
   apiToComponent: (apiSubscription: Subscription): any => {
 
-    const getBillingCycleFromDays = (days: number): "weekly" | "monthly" | "quarterly" | "yearly" | "daily" => {
+    const getBillingCycleFromDays = (days: number): BillingCycle => {
+      if (days === 1) return "daily";
       if (days === 7) return "weekly";
       if (days === 30) return "monthly";
       if (days === 90) return "quarterly";
@@ -241,6 +244,6 @@ export type {
   CreateSubscriptionRequest,
   UpdateSubscriptionRequest,
   SubscriptionStats,
-} from './api-types';
+} from '@/types';
 
 export default api;
