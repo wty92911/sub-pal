@@ -150,7 +150,7 @@ export function SubscriptionPage() {
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-16">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <p className="text-red-600 mb-4">{error}</p>
+              <p className="text-destructive mb-4">{error}</p>
               <Button onClick={loadSubscriptions}>Retry</Button>
             </div>
           </div>

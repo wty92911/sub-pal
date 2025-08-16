@@ -64,12 +64,12 @@ export function LoginForm() {
     <div className="mx-auto w-full max-w-md space-y-6 p-6">
       <div className="space-y-2 text-center">
         <h1 className="text-3xl font-bold">Login</h1>
-        <p className="text-gray-500 dark:text-gray-400">Enter your credentials to access your account</p>
+        <p className="text-muted-foreground">Enter your credentials to access your account</p>
       </div>
 
       {displayError && (
-        <div className="rounded-md bg-red-50 border border-red-200 p-4 text-sm text-red-600 flex items-start">
-          <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0 text-red-500" />
+        <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive flex items-start">
+          <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0 text-destructive" />
           <div>
             <p className="font-medium">Login Error</p>
             <p>{displayError}</p>

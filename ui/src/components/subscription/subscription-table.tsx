@@ -21,33 +21,33 @@ export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleSta
   };
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="bg-card text-card-foreground rounded-lg shadow overflow-hidden border">
+      <table className="min-w-full divide-y divide-border">
+        <thead className="bg-muted/50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Service
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Price/Cycle
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Start Date
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Next Billing
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-card divide-y divide-border">
           {subscriptions.map((subscription) => (
-            <tr key={subscription.id} className="hover:bg-gray-50">
+            <tr key={subscription.id} className="hover:bg-muted/30">
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
                   <div
@@ -57,27 +57,27 @@ export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleSta
                     {subscription.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="ml-4">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium">
                       {subscription.name}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       {subscription.category}
                     </div>
                   </div>
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">
+                <div className="text-sm font-medium">
                   {formatCurrency(subscription.amount, subscription.currency)}
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-muted-foreground">
                   {formatBillingCycle(subscription.billingCycle)}
                 </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm">
                 {subscription.startDate ? format(new Date(subscription.startDate), 'MMM dd, yyyy') : 'N/A'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm">
                 {format(new Date(subscription.nextBillingDate), 'MMM dd, yyyy')}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
@@ -93,7 +93,7 @@ export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleSta
                     variant="ghost"
                     size="sm"
                     onClick={() => onEdit(subscription.id)}
-                    className="text-blue-600 hover:text-blue-900"
+                    className="text-primary hover:text-primary/80"
                   >
                     <Edit className="w-4 h-4" />
                   </Button>
@@ -101,7 +101,7 @@ export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleSta
                     variant="ghost"
                     size="sm"
                     onClick={() => onDelete(subscription.id)}
-                    className="text-red-600 hover:text-red-900"
+                    className="text-destructive hover:text-destructive/80"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

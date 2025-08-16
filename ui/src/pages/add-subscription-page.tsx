@@ -132,8 +132,8 @@ export function AddSubscriptionPage() {
 
           <div className="bg-card rounded-lg border shadow-sm p-6">
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">{error}</p>
+              <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                <p className="text-destructive text-sm">{error}</p>
               </div>
             )}
 
