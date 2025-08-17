@@ -2,7 +2,7 @@ import { Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { format } from 'date-fns';
-import type { SubscriptionDisplay, SubscriptionTableProps } from '@/types';
+import type { SubscriptionTableProps } from '@/types';
 
 export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleStatus }: SubscriptionTableProps) {
   const formatCurrency = (amount: string, currency?: string) => {
@@ -68,7 +68,7 @@ export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleSta
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm font-medium">
-                  {formatCurrency(subscription.amount, subscription.currency)}
+                  {formatCurrency(String(subscription.amount), subscription.currency)}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   {formatBillingCycle(subscription.billingCycle)}
@@ -83,7 +83,7 @@ export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleSta
               <td className="px-6 py-4 whitespace-nowrap">
                 <Toggle
                   checked={subscription.status === "Active"}
-                  onCheckedChange={() => onToggleStatus(subscription.id)}
+                  onCheckedChange={() => onToggleStatus(String(subscription.id))}
                   disabled={subscription.status === "Cancelled" || subscription.status === "Trial"}
                 />
               </td>
@@ -92,7 +92,7 @@ export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleSta
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onEdit(subscription.id)}
+                    onClick={() => onEdit(String(subscription.id))}
                     className="text-primary hover:text-primary/80"
                   >
                     <Edit className="w-4 h-4" />
@@ -100,7 +100,7 @@ export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleSta
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onDelete(subscription.id)}
+                    onClick={() => onDelete(String(subscription.id))}
                     className="text-destructive hover:text-destructive/80"
                   >
                     <Trash2 className="w-4 h-4" />

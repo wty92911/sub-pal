@@ -1,7 +1,6 @@
 // ======== UI Component Types ========
 
 import React from 'react';
-import type { VariantProps } from 'class-variance-authority';
 
 // ======== Sidebar Types ========
 
@@ -21,7 +20,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
-export interface ButtonProps 
+export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
@@ -40,7 +39,7 @@ export interface CalendarProps {
 
 // ======== Data Table Types ========
 
-export interface DataTableProps<TData, TValue> {
+export interface DataTableProps<TData> {
   columns: any[]; // ColumnDef type from @tanstack/react-table
   data: TData[];
 }

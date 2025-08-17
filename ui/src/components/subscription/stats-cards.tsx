@@ -1,5 +1,5 @@
 import { CreditCard, DollarSign, Calendar, AlertCircle } from 'lucide-react';
-import type { SubscriptionDisplay, StatsCardsProps } from '@/types';
+import type { StatsCardsProps } from '@/types';
 
 export function StatsCards({ subscriptions }: StatsCardsProps) {
   const totalSubscriptions = subscriptions.length;

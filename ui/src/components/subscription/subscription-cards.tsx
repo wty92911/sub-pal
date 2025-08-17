@@ -2,7 +2,7 @@ import { Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { format } from 'date-fns';
-import type { SubscriptionDisplay, SubscriptionCardsProps } from '@/types';
+import type { SubscriptionCardsProps } from '@/types';
 
 export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleStatus }: SubscriptionCardsProps) {
   const formatCurrency = (amount: string, currency?: string) => {
@@ -40,7 +40,7 @@ export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleSta
             <div className="flex items-center space-x-2">
               <Toggle
                 checked={subscription.status === "Active"}
-                onCheckedChange={() => onToggleStatus(subscription.id)}
+                onCheckedChange={() => onToggleStatus(String(subscription.id))}
                 disabled={subscription.status === "Cancelled" || subscription.status === "Trial"}
               />
             </div>
@@ -50,7 +50,7 @@ export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleSta
             <div>
               <p className="text-muted-foreground">Price</p>
               <p className="font-medium">
-                {formatCurrency(subscription.amount, subscription.currency)}/{formatBillingCycle(subscription.billingCycle)}
+                {formatCurrency(String(subscription.amount), subscription.currency)}/{formatBillingCycle(subscription.billingCycle)}
               </p>
             </div>
             <div>
@@ -65,7 +65,7 @@ export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleSta
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onEdit(subscription.id)}
+              onClick={() => onEdit(String(subscription.id))}
               className="text-primary hover:bg-accent"
             >
               <Edit className="w-4 h-4 mr-1" />
@@ -74,7 +74,7 @@ export function SubscriptionCards({ subscriptions, onEdit, onDelete, onToggleSta
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onDelete(subscription.id)}
+              onClick={() => onDelete(String(subscription.id))}
               className="text-destructive hover:bg-destructive/10"
             >
               <Trash2 className="w-4 h-4 mr-1" />

@@ -10,14 +10,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter, Plus } from "lucide-react";
 import { subscriptionApi, subscriptionUtils } from "@/lib/api";
-import type { 
-  CreateSubscriptionRequest, 
-  SubscriptionCurrency, 
+import type {
+  SubscriptionCurrency,
   SubscriptionStatus,
   Subscription as ApiSubscription,
   SubscriptionDisplay,
-  SubscriptionFormValues,
-  BillingCycle
+  SubscriptionFormValues
 } from "@/types";
 
 // Use utility function for mapping API subscription to component format
@@ -25,16 +23,6 @@ const mapApiSubscriptionToComponent = (apiSub: ApiSubscription): SubscriptionDis
   return subscriptionUtils.apiToComponent(apiSub);
 };
 
-const getBillingCycleDays = (billingCycle: BillingCycle): number => {
-  switch (billingCycle) {
-    case "daily": return 1;
-    case "weekly": return 7;
-    case "monthly": return 30;
-    case "quarterly": return 90;
-    case "yearly": return 365;
-    default: return 30;
-  }
-};
 
 export function SubscriptionPage() {
   const navigate = useNavigate();

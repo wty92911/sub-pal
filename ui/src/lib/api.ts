@@ -6,10 +6,8 @@ import type {
   LoginRequest,
   Subscription,
   CreateSubscriptionRequest,
-  UpdateSubscriptionRequest,
   SubscriptionStats,
   SubscriptionStatus,
-  ApiResponse,
   ApiSubscriptionsResponse,
   ApiUserResponse,
   ApiAuthResponse,
@@ -242,7 +240,6 @@ export type {
   LoginRequest,
   Subscription,
   CreateSubscriptionRequest,
-  UpdateSubscriptionRequest,
   SubscriptionStats,
 } from '@/types';
 

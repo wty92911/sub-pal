@@ -22,7 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { SidebarContext, useSidebar, SidebarContextProps } from "./sidebar.context"
+import { SidebarContext, useSidebar } from "./sidebar.context"
 import { sidebarMenuButtonVariants } from "./sidebar.config"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -92,7 +92,7 @@ function SidebarProvider({
   // This makes it easier to style the sidebar with Tailwind classes.
   const state = open ? "expanded" : "collapsed"
 
-  const contextValue = React.useMemo<SidebarContextProps>(
+  const contextValue = React.useMemo<import('@/types').SidebarContextProps>(
     () => ({
       state,
       open,
