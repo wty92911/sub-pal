@@ -2,6 +2,7 @@ use axum::{Json, Router, extract::State, routing::post};
 use sqlx::PgPool;
 use tracing;
 
+use crate::middleware::auth_rate_limit_middleware;
 use crate::models::{AuthResponse, LoginRequest, RegisterRequest, UserResponse};
 use crate::services::UserService;
 use crate::utils::response::{ApiResponse, AppError, success};
@@ -11,6 +12,7 @@ pub fn auth_routes() -> Router<PgPool> {
     Router::new()
         .route("/register", post(register))
         .route("/login", post(login))
+        .layer(axum::middleware::from_fn(auth_rate_limit_middleware))
 }
 
 /// Register a new user

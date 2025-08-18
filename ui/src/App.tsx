@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth-context';
 import { LoginPage } from './pages/login-page';
@@ -8,6 +8,7 @@ import { SubscriptionPage } from './pages/subscription-page';
 import { AddSubscriptionPage } from './pages/add-subscription-page';
 import { StatisticsPage } from './pages/statistics-page';
 import { ProtectedRoute } from './components/auth/protected-route';
+import { ErrorBoundary } from './components/ui/error-boundary';
 
 // Root redirect component that handles authentication state
 function RootRedirect() {
@@ -31,12 +32,25 @@ function RootRedirect() {
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  const handleError = useCallback((error: Error, errorInfo: any) => {
+    // Log error to console in development
+    console.error('App Error:', error, errorInfo);
+
+    // In production, you would send this to an error reporting service
+    // errorReportingService.logError(error, errorInfo);
+  }, []);
+
+  const toggleDarkMode = useCallback(() => {
+    setIsDarkMode(prev => !prev);
+  }, []);
+
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
-      <div className="bg-background text-foreground">
-        <AuthProvider>
-          <Router>
-            <Routes>
+    <ErrorBoundary onError={handleError}>
+      <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
+        <div className="bg-background text-foreground">
+          <AuthProvider>
+            <Router>
+              <Routes>
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
@@ -64,7 +78,7 @@ function App() {
         {/* Theme toggle button */}
         <div className="fixed bottom-4 right-4 z-[100]">
           <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
+            onClick={toggleDarkMode}
             className="rounded-full bg-primary p-2 text-primary-foreground shadow-sm hover:bg-primary/90"
             aria-label="Toggle theme"
           >
@@ -88,7 +102,7 @@ function App() {
           </button>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 

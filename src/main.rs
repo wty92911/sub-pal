@@ -1,6 +1,5 @@
 use axum::Router;
 use axum::http::Method;
-use clap::Parser;
 use std::env;
 use std::net::SocketAddr;
 use tower_http::cors::{AllowOrigin, CorsLayer};
@@ -15,74 +14,78 @@ mod services;
 mod utils;
 
 use config::create_pool;
-use middleware::request_logger;
+use middleware::{rate_limit_middleware, request_logger, security_headers};
 use routes::api_routes;
 
-#[derive(Parser)]
-#[command(name = "sub-pal")]
-#[command(about = "Subscription Service Management Panel")]
-#[command(version)]
-struct Args {
-    /// Path to the .env file
-    #[arg(short, long, default_value = ".env")]
-    env_file: String,
-
-    /// Database URL override
-    #[arg(long)]
-    database_url: Option<String>,
-
-    /// Log level
-    #[arg(short, long, default_value = "info")]
+// Configuration loaded from environment variables (provided by Docker)
+struct Config {
     log_level: String,
-
-    /// Server port
-    #[arg(short, long, default_value = "3000")]
     port: u16,
+    host: String,
+}
+
+impl Config {
+    fn from_env() -> Self {
+        Self {
+            log_level: env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()),
+            port: env::var("PORT")
+                .unwrap_or_else(|_| "3000".to_string())
+                .parse()
+                .unwrap_or(3000),
+            host: env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string()),
+        }
+    }
 }
 
 #[tokio::main]
 async fn main() {
-    let args = Args::parse();
+    // Load configuration from environment variables (provided by Docker)
+    let config = Config::from_env();
 
-    // Load environment variables from .env file
-    match dotenv::from_filename(&args.env_file) {
-        Ok(_) => tracing::info!("Successfully loaded .env file: {}", args.env_file),
-        Err(e) => tracing::error!("Error loading .env file {}: {}", args.env_file, e),
-    }
-
-    // Set database URL if provided via command line
-    if let Some(db_url) = args.database_url {
-        tracing::info!("Setting DATABASE_URL from command line argument");
-        unsafe {
-            std::env::set_var("DATABASE_URL", db_url);
-        }
-    } else if env::var("DATABASE_URL").is_err() {
-        tracing::info!("Setting DATABASE_URL to default value");
-        unsafe {
-            std::env::set_var(
-                "DATABASE_URL",
-                "postgres://postgres:postgres@localhost:5432/sub_pal",
-            );
-        }
-    }
+    tracing::info!(
+        "Starting Sub-Pal with config - Host: {}, Port: {}, Log Level: {}",
+        config.host,
+        config.port,
+        config.log_level
+    );
 
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(
-            env::var("RUST_LOG").unwrap_or_else(|_| args.log_level.clone()),
-        ))
+        .with(tracing_subscriber::EnvFilter::new(&config.log_level))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
     // Create database connection pool
-    let pool = create_pool().await.expect("Failed to create database pool");
+    let pool = match create_pool().await {
+        Ok(pool) => {
+            tracing::info!("Database connection pool created successfully");
+            pool
+        }
+        Err(e) => {
+            tracing::error!("Failed to create database pool: {}", e);
+            std::process::exit(1);
+        }
+    };
 
-    // Configure CORS
-    let allowed_origins = AllowOrigin::list(vec![
-        "http://localhost:5173".parse().unwrap(),
-        "http://192.168.31.123:5173".parse().unwrap(),
-        "http://wty92911.top:5173".parse().unwrap(),
-    ]);
+    // Configure CORS with proper error handling
+    let allowed_origins = {
+        let origins_str = env::var("ALLOWED_ORIGINS").unwrap_or_else(|_| {
+            "http://localhost:5173,http://192.168.31.123:5173,http://wty92911.top:5173".to_string()
+        });
+
+        let origins: Vec<&str> = origins_str.split(',').map(|s| s.trim()).collect();
+
+        let parsed_origins: Result<Vec<_>, _> =
+            origins.iter().map(|origin| origin.parse()).collect();
+
+        match parsed_origins {
+            Ok(origins) => AllowOrigin::list(origins),
+            Err(e) => {
+                tracing::error!("Failed to parse CORS origins: {}", e);
+                std::process::exit(1);
+            }
+        }
+    };
 
     // Define allowed methods
     let allowed_methods = vec![
@@ -112,12 +115,38 @@ async fn main() {
         .with_state(pool)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
+        .layer(axum::middleware::from_fn(security_headers))
+        .layer(axum::middleware::from_fn(rate_limit_middleware))
         .layer(axum::middleware::from_fn(request_logger));
 
-    // Start server
-    let addr = SocketAddr::from(([0, 0, 0, 0], args.port));
-    tracing::info!("listening on {}", addr);
+    // Start server with proper error handling
+    let host_parts: Vec<u8> = config
+        .host
+        .split('.')
+        .map(|s| s.parse().unwrap_or(0))
+        .collect();
+    let host_addr = if host_parts.len() == 4 {
+        [host_parts[0], host_parts[1], host_parts[2], host_parts[3]]
+    } else {
+        [0, 0, 0, 0] // Default to 0.0.0.0 if parsing fails
+    };
 
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let addr = SocketAddr::from((host_addr, config.port));
+    tracing::info!("Starting server on {}", addr);
+
+    let listener = match tokio::net::TcpListener::bind(addr).await {
+        Ok(listener) => {
+            tracing::info!("Server successfully bound to {}", addr);
+            listener
+        }
+        Err(e) => {
+            tracing::error!("Failed to bind to address {}: {}", addr, e);
+            std::process::exit(1);
+        }
+    };
+
+    if let Err(e) = axum::serve(listener, app).await {
+        tracing::error!("Server error: {}", e);
+        std::process::exit(1);
+    }
 }

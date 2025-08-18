@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { getSecureToken, setSecureToken, removeSecureToken } from './secure-storage';
 import type {
   User,
   AuthResponse,
@@ -33,7 +34,7 @@ const api: AxiosInstance = axios.create({
 // Request interceptor: Add authentication token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = getSecureToken('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -83,9 +84,9 @@ export const authApi = {
     const response = await api.post<ApiAuthResponse>('/auth/login', data);
     const authData = handleResponse<AuthResponse>(response);
 
-    // Store tokens
-    localStorage.setItem('token', authData.token);
-    localStorage.setItem('refresh_token', authData.refresh_token);
+    // Store tokens securely
+    setSecureToken('token', authData.token, { maxAge: 3600 }); // 1 hour
+    setSecureToken('refresh_token', authData.refresh_token, { maxAge: 30 * 24 * 3600 }); // 30 days
 
     return authData;
   },
@@ -94,8 +95,8 @@ export const authApi = {
    * Logout user and clear tokens
    */
   logout: (): void => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
+    removeSecureToken('token');
+    removeSecureToken('refresh_token');
   },
 
   /**

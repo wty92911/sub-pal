@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from './api';
+import { getSecureToken, removeSecureToken } from './secure-storage';
 import type { AuthContextType, User } from '@/types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,7 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = getSecureToken('token');
         if (token) {
           const userData = await authApi.getCurrentUser();
           setUser(userData);
@@ -29,8 +30,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (err) {
         console.error('Auth check failed:', err);
         // Clear invalid tokens
-        localStorage.removeItem('token');
-        localStorage.removeItem('refresh_token');
+        removeSecureToken('token');
+        removeSecureToken('refresh_token');
       } finally {
         setIsLoading(false);
       }
