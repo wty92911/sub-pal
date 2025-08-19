@@ -37,6 +37,7 @@ RUN apt-get update && apt-get install -y \
 COPY --from=builder /app/target/release/sub-pal .
 COPY --from=builder /app/migrations ./migrations
 
+
 # Expose port
 EXPOSE 3000
 

@@ -1,4 +1,5 @@
 use sqlx::{PgPool, Row};
+use tracing;
 use uuid::Uuid;
 
 use crate::models::{AuthResponse, LoginRequest, RegisterRequest, UserResponse};
@@ -18,14 +19,30 @@ impl UserService {
 
     /// Register a new user
     pub async fn register(&self, request: RegisterRequest) -> Result<UserResponse, AppError> {
+        tracing::debug!(
+            "UserService::register - Starting registration for email: {}",
+            request.email
+        );
+
         // Check if user already exists
         let existing_user = sqlx::query("SELECT id FROM users WHERE email = $1")
             .bind(&request.email)
             .fetch_optional(&self.pool)
             .await
-            .map_err(|e| AppError::InternalServerError(format!("Database error: {e}")))?;
+            .map_err(|e| {
+                tracing::error!(
+                    "UserService::register - Database query failed for email '{}': {}",
+                    request.email,
+                    e
+                );
+                AppError::InternalServerError(format!("Database error: {e}"))
+            })?;
 
         if existing_user.is_some() {
+            tracing::warn!(
+                "UserService::register - User already exists with email: {}",
+                request.email
+            );
             return Err(AppError::Conflict(format!(
                 "User with email {} already exists",
                 request.email
@@ -33,8 +50,14 @@ impl UserService {
         }
 
         // Hash password
-        let password_hash = hash_password(&request.password)
-            .map_err(|e| AppError::InternalServerError(format!("Password hashing error: {e}")))?;
+        let password_hash = hash_password(&request.password).map_err(|e| {
+            tracing::error!(
+                "UserService::register - Password hashing failed for email '{}': {}",
+                request.email,
+                e
+            );
+            AppError::InternalServerError(format!("Password hashing error: {e}"))
+        })?;
 
         // Begin transaction
         let mut tx = self
@@ -100,6 +123,11 @@ impl UserService {
 
     /// Login a user with optimized single query
     pub async fn login(&self, request: LoginRequest) -> Result<AuthResponse, AppError> {
+        tracing::debug!(
+            "UserService::login - Starting login for email: {}",
+            request.email
+        );
+
         // Find user and profile with a single JOIN query using function form
         let result = sqlx::query(
             r#"
@@ -122,8 +150,21 @@ impl UserService {
         .bind(&request.email)
         .fetch_optional(&self.pool)
         .await
-        .map_err(|e| AppError::InternalServerError(format!("Database error: {e}")))?
-        .ok_or_else(|| AppError::Unauthorized("Invalid email or password".to_string()))?;
+        .map_err(|e| {
+            tracing::error!(
+                "UserService::login - Database query failed for email '{}': {}",
+                request.email,
+                e
+            );
+            AppError::InternalServerError(format!("Database error: {e}"))
+        })?
+        .ok_or_else(|| {
+            tracing::warn!(
+                "UserService::login - User not found with email: {}",
+                request.email
+            );
+            AppError::Unauthorized("Invalid email or password".to_string())
+        })?;
 
         // Extract values from the row
         let user_id: uuid::Uuid = result.get("user_id");
@@ -143,10 +184,19 @@ impl UserService {
 
         // Verify password
         let is_valid = verify_password(&request.password, &password_hash).map_err(|e| {
+            tracing::error!(
+                "UserService::login - Password verification failed for email '{}': {}",
+                request.email,
+                e
+            );
             AppError::InternalServerError(format!("Password verification error: {e}"))
         })?;
 
         if !is_valid {
+            tracing::warn!(
+                "UserService::login - Invalid password for email: {}",
+                request.email
+            );
             return Err(AppError::Unauthorized(
                 "Invalid email or password".to_string(),
             ));
@@ -167,10 +217,21 @@ impl UserService {
         };
 
         // Generate tokens
-        let token = generate_token(user.id)
-            .map_err(|e| AppError::InternalServerError(format!("Token generation error: {e}")))?;
+        let token = generate_token(user.id).map_err(|e| {
+            tracing::error!(
+                "UserService::login - Token generation failed for user '{}': {}",
+                user.id,
+                e
+            );
+            AppError::InternalServerError(format!("Token generation error: {e}"))
+        })?;
 
         let refresh_token = generate_refresh_token(user.id).map_err(|e| {
+            tracing::error!(
+                "UserService::login - Refresh token generation failed for user '{}': {}",
+                user.id,
+                e
+            );
             AppError::InternalServerError(format!("Refresh token generation error: {e}"))
         })?;
 

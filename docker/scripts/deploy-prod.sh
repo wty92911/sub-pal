@@ -87,7 +87,7 @@ else
 fi
 
 echo "⏳ Waiting for services to be ready..."
-sleep 30
+sleep 10
 
 # Check if services are running
 if docker-compose -f docker/compose/docker-compose.prod.yml ps | grep -q "Up"; then

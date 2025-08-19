@@ -4,6 +4,8 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use serde::Serialize;
+use std::fmt;
+use tracing;
 
 /// Standard API response format for success responses
 #[derive(Debug, Serialize)]
@@ -40,6 +42,7 @@ pub fn success<T: Serialize>(data: T) -> Json<ApiResponse<T>> {
 }
 
 /// Custom error type for API errors
+#[derive(Debug)]
 pub enum AppError {
     BadRequest(String),
     Unauthorized(String),
@@ -53,8 +56,51 @@ pub enum AppError {
     },
 }
 
+impl fmt::Display for AppError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AppError::BadRequest(msg) => write!(f, "Bad Request: {msg}"),
+            AppError::Unauthorized(msg) => write!(f, "Unauthorized: {msg}"),
+            AppError::_Forbidden(msg) => write!(f, "Forbidden: {msg}"),
+            AppError::NotFound(msg) => write!(f, "Not Found: {msg}"),
+            AppError::Conflict(msg) => write!(f, "Conflict: {msg}"),
+            AppError::InternalServerError(msg) => write!(f, "Internal Server Error: {msg}"),
+            AppError::_ValidationError { message, details } => {
+                write!(f, "Validation Error: {message} - Details: {details:?}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for AppError {}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
+        // Log the error before converting to response
+        match &self {
+            AppError::InternalServerError(msg) => {
+                tracing::error!("Internal Server Error: {}", msg);
+            }
+            AppError::BadRequest(msg) => {
+                tracing::warn!("Bad Request: {}", msg);
+            }
+            AppError::Unauthorized(msg) => {
+                tracing::warn!("Unauthorized: {}", msg);
+            }
+            AppError::NotFound(msg) => {
+                tracing::warn!("Not Found: {}", msg);
+            }
+            AppError::Conflict(msg) => {
+                tracing::warn!("Conflict: {}", msg);
+            }
+            AppError::_Forbidden(msg) => {
+                tracing::warn!("Forbidden: {}", msg);
+            }
+            AppError::_ValidationError { message, details } => {
+                tracing::warn!("Validation Error: {} - Details: {:?}", message, details);
+            }
+        }
+
         let (status, error_code, error_message, details) = match self {
             AppError::BadRequest(message) => (
                 StatusCode::BAD_REQUEST,
@@ -107,15 +153,5 @@ impl IntoResponse for AppError {
         });
 
         (status, body).into_response()
-    }
-}
-
-/// Convert a standard error to an AppError::InternalServerError
-impl<E> From<E> for AppError
-where
-    E: std::error::Error,
-{
-    fn from(err: E) -> Self {
-        AppError::InternalServerError(err.to_string())
     }
 }

@@ -42,10 +42,25 @@ async fn register(
     // Create user service
     let user_service = UserService::new(pool);
 
-    // Register user
-    let user = user_service.register(request).await?;
+    // Capture email for logging before moving request
+    let email = request.email.clone();
 
-    tracing::info!("User registered successfully: {}", user.email);
+    // Register user with detailed error logging
+    let user = match user_service.register(request).await {
+        Ok(user_response) => {
+            tracing::info!("User registered successfully: {}", user_response.email);
+            user_response
+        }
+        Err(e) => {
+            tracing::error!(
+                "Registration failed for email '{}': Error type: {:?}, Message: {}",
+                email,
+                std::mem::discriminant(&e),
+                e
+            );
+            return Err(e);
+        }
+    };
 
     // Return success response
     Ok(success(user))
@@ -72,10 +87,25 @@ async fn login(
     // Create user service
     let user_service = UserService::new(pool);
 
-    // Login user
-    let auth = user_service.login(request).await?;
+    // Capture email for logging before moving request
+    let email = request.email.clone();
 
-    tracing::info!("User logged in successfully: {}", auth.user.email);
+    // Login user with detailed error logging
+    let auth = match user_service.login(request).await {
+        Ok(auth_response) => {
+            tracing::info!("User logged in successfully: {}", auth_response.user.email);
+            auth_response
+        }
+        Err(e) => {
+            tracing::error!(
+                "Login failed for email '{}': Error type: {:?}, Message: {}",
+                email,
+                std::mem::discriminant(&e),
+                e
+            );
+            return Err(e);
+        }
+    };
 
     // Return success response
     Ok(success(auth))

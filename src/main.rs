@@ -49,10 +49,16 @@ async fn main() {
         config.log_level
     );
 
-    // Initialize tracing
+    // Initialize tracing with detailed formatting
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(&config.log_level))
-        .with(tracing_subscriber::fmt::layer())
+        .with(
+            tracing_subscriber::fmt::layer()
+                .with_target(true)
+                .with_line_number(true)
+                .with_thread_ids(true)
+                .with_level(true),
+        )
         .init();
 
     // Create database connection pool

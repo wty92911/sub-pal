@@ -1,17 +1,50 @@
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::env;
 use std::time::Duration;
+use tracing;
 
 /// Creates a connection pool to the PostgreSQL database
 pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
     let database_url =
         env::var("DATABASE_URL").expect("DATABASE_URL environment variable must be set");
 
-    PgPoolOptions::new()
+    tracing::info!("Creating database connection pool...");
+    tracing::debug!("Database URL: {}", mask_database_url(&database_url));
+
+    let pool_result = PgPoolOptions::new()
         .max_connections(5)
         .acquire_timeout(Duration::from_secs(3))
         .connect(&database_url)
-        .await
+        .await;
+
+    match &pool_result {
+        Ok(_) => {
+            tracing::info!("Database connection pool created successfully");
+        }
+        Err(e) => {
+            tracing::error!("Failed to create database connection pool: {}", e);
+            tracing::error!(
+                "Database URL (masked): {}",
+                mask_database_url(&database_url)
+            );
+        }
+    }
+
+    pool_result
+}
+
+/// Mask sensitive information in database URL for logging
+fn mask_database_url(url: &str) -> String {
+    if let Some(at_pos) = url.find('@') {
+        if let Some(colon_pos) = url[..at_pos].rfind(':') {
+            let mut masked = url.to_string();
+            let password_start = colon_pos + 1;
+            let password_end = at_pos;
+            masked.replace_range(password_start..password_end, "***");
+            return masked;
+        }
+    }
+    url.to_string()
 }
 
 #[cfg(test)]
