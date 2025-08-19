@@ -6,7 +6,37 @@ set -e
 # Navigate to project root
 cd "$(dirname "$0")/../.."
 
-echo "🚀 Starting Sub-Pal Production Docker deployment..."
+# Parse command line arguments
+SERVICE=""
+case "$1" in
+    backend|back|be)
+        SERVICE="backend"
+        echo "🚀 Starting Sub-Pal Backend-only Production deployment..."
+        ;;
+    frontend|front|fe)
+        SERVICE="frontend"
+        echo "🚀 Starting Sub-Pal Frontend-only Production deployment..."
+        ;;
+    ""|all|full)
+        SERVICE="all"
+        echo "🚀 Starting Sub-Pal Full Production Docker deployment..."
+        ;;
+    -h|--help|help)
+        echo "Usage: $0 [backend|frontend|all]"
+        echo ""
+        echo "Options:"
+        echo "  backend, back, be    Deploy only backend service"
+        echo "  frontend, front, fe  Deploy only frontend service"
+        echo "  all, full, (empty)   Deploy all services (default)"
+        echo "  -h, --help, help     Show this help message"
+        exit 0
+        ;;
+    *)
+        echo "❌ Unknown option: $1"
+        echo "Use '$0 --help' for usage information"
+        exit 1
+        ;;
+esac
 
 # Check if docker and docker-compose are installed
 if ! command -v docker &> /dev/null; then
@@ -30,20 +60,31 @@ fi
 # Create necessary directories
 mkdir -p logs ssl backups
 
-# Pull latest images and build
-echo "📥 Pulling latest base images..."
-docker-compose -f docker/compose/docker-compose.prod.yml pull
+# Selective deployment logic
+if [ "$SERVICE" = "all" ]; then
+    # Full deployment
+    echo "📥 Pulling latest base images..."
+    docker-compose -f docker/compose/docker-compose.prod.yml pull
 
-echo "🔨 Building production images..."
-docker-compose -f docker/compose/docker-compose.prod.yml build
+    echo "🔨 Building production images..."
+    docker-compose -f docker/compose/docker-compose.prod.yml build
 
-# Stop existing services
-echo "🛑 Stopping existing services..."
-docker-compose -f docker/compose/docker-compose.prod.yml down
+    echo "🛑 Stopping existing services..."
+    docker-compose -f docker/compose/docker-compose.prod.yml down
 
-# Start services
-echo "🚀 Starting production services..."
-docker-compose -f docker/compose/docker-compose.prod.yml --env-file .env.prod up -d
+    echo "🚀 Starting production services..."
+    docker-compose -f docker/compose/docker-compose.prod.yml --env-file .env.prod up -d
+else
+    # Selective deployment
+    echo "🔨 Building $SERVICE image..."
+    docker-compose -f docker/compose/docker-compose.prod.yml --env-file .env.prod build $SERVICE
+
+    echo "🛑 Stopping $SERVICE service..."
+    docker-compose -f docker/compose/docker-compose.prod.yml --env-file .env.prod stop $SERVICE
+
+    echo "🚀 Starting $SERVICE service..."
+    docker-compose -f docker/compose/docker-compose.prod.yml --env-file .env.prod up -d $SERVICE
+fi
 
 echo "⏳ Waiting for services to be ready..."
 sleep 30

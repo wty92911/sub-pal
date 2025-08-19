@@ -96,7 +96,7 @@ class MonitoringService {
           const endTime = performance.now();
           this.recordError(error as Error, {
             apiCall: true,
-            url: typeof args[0] === 'string' ? args[0] : args[0].url,
+            url: typeof args[0] === 'string' ? args[0] : (args[0] instanceof Request ? args[0].url : args[0].toString()),
             duration: endTime - startTime,
           });
           throw error;

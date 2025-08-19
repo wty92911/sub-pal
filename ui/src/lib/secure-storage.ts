@@ -24,16 +24,8 @@ class SecureStorage {
    * In production with HTTPS: Uses secure cookies via API
    * In production without HTTPS: Uses sessionStorage with warnings
    */
-  setToken(key: string, value: string, options: StorageOptions = {}): void {
+  setToken(key: string, value: string, _options: StorageOptions = {}): void {
     if (typeof window === 'undefined') return;
-
-    const defaultOptions: StorageOptions = {
-      secure: this.isSecureContext,
-      httpOnly: false, // Can't be true for client-side cookies
-      sameSite: 'strict',
-      maxAge: 3600, // 1 hour
-      ...options,
-    };
 
     try {
       // In a production environment with proper backend support,
