@@ -8,7 +8,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../../backups:/backups
-      - ../../migrations:/docker-entrypoint-initdb.d:ro
     restart: unless-stopped
     logging:
       driver: "json-file"

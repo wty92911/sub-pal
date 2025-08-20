@@ -116,6 +116,13 @@ async fn main() {
         .allow_credentials(true);
 
     // Build application with routes and middleware
+    tracing::info!("Setting up application middleware stack:");
+    tracing::info!("  - CORS layer");
+    tracing::info!("  - Trace layer");
+    tracing::info!("  - Security headers middleware");
+    tracing::info!("  - Rate limit middleware (with ConnectInfo)");
+    tracing::info!("  - Request logger middleware");
+
     let app = Router::new()
         .nest("/api/v1", api_routes())
         .with_state(pool)
@@ -151,7 +158,14 @@ async fn main() {
         }
     };
 
-    if let Err(e) = axum::serve(listener, app).await {
+    tracing::info!("Server configured with ConnectInfo<SocketAddr> for rate limiting");
+
+    if let Err(e) = axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    {
         tracing::error!("Server error: {}", e);
         std::process::exit(1);
     }

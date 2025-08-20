@@ -71,8 +71,12 @@ async fn login(
     State(pool): State<PgPool>,
     Json(request): Json<LoginRequest>,
 ) -> Result<Json<ApiResponse<AuthResponse>>, AppError> {
-    // Log the request
-    tracing::info!("Login request received for email: {}", request.email);
+    // Log the request with more detail
+    tracing::info!(
+        "=== LOGIN REQUEST START === Email: {}, Password length: {}",
+        request.email,
+        request.password.len()
+    );
 
     // Validate input
     if request.email.is_empty() {
@@ -108,5 +112,6 @@ async fn login(
     };
 
     // Return success response
+    tracing::info!("=== LOGIN REQUEST SUCCESS === Email: {}", auth.user.email);
     Ok(success(auth))
 }

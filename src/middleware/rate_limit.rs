@@ -154,6 +154,12 @@ pub async fn rate_limit_middleware(
     request: Request,
     next: Next,
 ) -> Response {
+    tracing::debug!(
+        "Rate limit middleware - Client IP: {}, Method: {}, URI: {}",
+        addr.ip(),
+        request.method(),
+        request.uri()
+    );
     // Get the rate limiter from the request extensions or create a default one
     static RATE_LIMITER: std::sync::OnceLock<RateLimiter> = std::sync::OnceLock::new();
     let rate_limiter = RATE_LIMITER.get_or_init(|| {
@@ -224,6 +230,12 @@ pub async fn auth_rate_limit_middleware(
     request: Request,
     next: Next,
 ) -> Response {
+    tracing::info!(
+        "Auth rate limit middleware - Client IP: {}, Method: {}, URI: {}",
+        addr.ip(),
+        request.method(),
+        request.uri()
+    );
     static AUTH_RATE_LIMITER: std::sync::OnceLock<RateLimiter> = std::sync::OnceLock::new();
     let rate_limiter = AUTH_RATE_LIMITER.get_or_init(|| {
         RateLimiter::new(RateLimitConfig {

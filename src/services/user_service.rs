@@ -123,7 +123,7 @@ impl UserService {
 
     /// Login a user with optimized single query
     pub async fn login(&self, request: LoginRequest) -> Result<AuthResponse, AppError> {
-        tracing::debug!(
+        tracing::info!(
             "UserService::login - Starting login for email: {}",
             request.email
         );
@@ -236,6 +236,11 @@ impl UserService {
         })?;
 
         // Return auth response
+        tracing::info!(
+            "UserService::login - Login successful for email: {}, user_id: {}",
+            request.email,
+            user.id
+        );
         Ok(AuthResponse {
             token,
             refresh_token,
