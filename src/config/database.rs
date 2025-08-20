@@ -3,7 +3,7 @@ use std::env;
 use std::time::Duration;
 use tracing;
 
-/// Creates a connection pool to the PostgreSQL database
+/// Creates a connection pool to the PostgreSQL database and runs migrations
 pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
     let database_url =
         env::var("DATABASE_URL").expect("DATABASE_URL environment variable must be set");
@@ -11,26 +11,27 @@ pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
     tracing::info!("Creating database connection pool...");
     tracing::debug!("Database URL: {}", mask_database_url(&database_url));
 
-    let pool_result = PgPoolOptions::new()
+    let pool = PgPoolOptions::new()
         .max_connections(5)
         .acquire_timeout(Duration::from_secs(3))
         .connect(&database_url)
-        .await;
+        .await?;
 
-    match &pool_result {
+    tracing::info!("Database connection pool created successfully");
+
+    // Run database migrations
+    tracing::info!("Running database migrations...");
+    match sqlx::migrate!("./migrations").run(&pool).await {
         Ok(_) => {
-            tracing::info!("Database connection pool created successfully");
+            tracing::info!("Database migrations completed successfully");
         }
         Err(e) => {
-            tracing::error!("Failed to create database connection pool: {}", e);
-            tracing::error!(
-                "Database URL (masked): {}",
-                mask_database_url(&database_url)
-            );
+            tracing::error!("Failed to run database migrations: {}", e);
+            return Err(e.into());
         }
     }
 
-    pool_result
+    Ok(pool)
 }
 
 /// Mask sensitive information in database URL for logging
