@@ -136,17 +136,90 @@ impl From<String> for Currency {
 
 impl Subscription {
     /// Calculate the next billing date based on the current date and billing cycle
+    /// Ensures the next billing date is after the start date
     pub fn calculate_next_billing_date(
         &self,
         start_date: NaiveDate,
         current_date: NaiveDate,
     ) -> NaiveDate {
         let mut next_billing_date = start_date;
-        while next_billing_date < current_date {
+
+        // Ensure the first billing date is at least at the start date
+        // If start date is in the future, the first billing will be the start date
+        if start_date >= current_date {
+            return start_date;
+        }
+
+        // For past start dates, calculate the next billing date after current date
+        while next_billing_date <= current_date {
             next_billing_date = next_billing_date
                 .checked_add_signed(chrono::Duration::days(self.billing_cycle_days as i64))
                 .unwrap_or(start_date);
         }
         next_billing_date
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bigdecimal::BigDecimal;
+    use chrono::NaiveDate;
+    use uuid::Uuid;
+
+    fn create_test_subscription() -> Subscription {
+        Subscription {
+            id: Uuid::new_v4(),
+            user_id: Uuid::new_v4(),
+            name: "Test Subscription".to_string(),
+            description: Some("Test Description".to_string()),
+            amount: BigDecimal::from(10),
+            currency: Currency::Usd,
+            billing_cycle_days: 30,
+            start_date: NaiveDate::from_ymd_opt(2024, 1, 1).unwrap(),
+            next_billing_date: NaiveDate::from_ymd_opt(2024, 1, 1).unwrap(),
+            status: SubscriptionStatus::Active,
+            category: Some("Test".to_string()),
+            color: Some("#FF0000".to_string()),
+            created_at: None,
+            updated_at: None,
+        }
+    }
+
+    #[test]
+    fn test_calculate_next_billing_date_future_start() {
+        let subscription = create_test_subscription();
+        let future_start = NaiveDate::from_ymd_opt(2024, 12, 1).unwrap();
+        let current_date = NaiveDate::from_ymd_opt(2024, 1, 15).unwrap();
+
+        let next_billing = subscription.calculate_next_billing_date(future_start, current_date);
+
+        // For future subscriptions, next billing should be the start date
+        assert_eq!(next_billing, future_start);
+    }
+
+    #[test]
+    fn test_calculate_next_billing_date_past_start() {
+        let subscription = create_test_subscription();
+        let past_start = NaiveDate::from_ymd_opt(2024, 1, 1).unwrap();
+        let current_date = NaiveDate::from_ymd_opt(2024, 2, 15).unwrap();
+
+        let next_billing = subscription.calculate_next_billing_date(past_start, current_date);
+
+        // Should be after current date
+        assert!(next_billing > current_date);
+        // Should be after start date
+        assert!(next_billing >= past_start);
+    }
+
+    #[test]
+    fn test_calculate_next_billing_date_start_today() {
+        let subscription = create_test_subscription();
+        let today = NaiveDate::from_ymd_opt(2024, 1, 15).unwrap();
+
+        let next_billing = subscription.calculate_next_billing_date(today, today);
+
+        // For start date today, next billing should be today
+        assert_eq!(next_billing, today);
     }
 }

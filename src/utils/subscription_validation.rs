@@ -33,17 +33,32 @@ pub fn validate_subscription_request(
         ));
     }
 
-    // Validate start_date is not in the future
+    // Allow future start dates for subscriptions
+    // No validation needed for start_date being in the future
+
+    // Validate next billing date
     let today = Utc::now().date_naive();
-    if request.start_date > today {
+
+    // Ensure next billing date is after start date
+    if request.next_billing_date < request.start_date {
         return Err((
             StatusCode::BAD_REQUEST,
-            Json(json!({"error": "Start date cannot be in the future"})),
+            Json(json!({"error": "Next billing date must be on or after the start date"})),
         ));
     }
 
-    // Validate next billing date is not in the past
-    if request.next_billing_date < today {
+    // If start date is in the future, next billing date should be the start date
+    if request.start_date > today && request.next_billing_date != request.start_date {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Json(
+                json!({"error": "For future subscriptions, next billing date should be the start date"}),
+            ),
+        ));
+    }
+
+    // If start date is today or in the past, next billing should not be in the past
+    if request.start_date <= today && request.next_billing_date < today {
         return Err((
             StatusCode::BAD_REQUEST,
             Json(json!({"error": "Next billing date cannot be in the past"})),
