@@ -4,7 +4,7 @@
 set -e
 
 # Navigate to project root
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../../.."
 
 echo "🚀 Starting Sub-Pal Docker deployment..."
 

@@ -8,7 +8,7 @@ import { SubscriptionCards } from "@/components/subscription/subscription-cards"
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, Plus } from "lucide-react";
+import { Filter, Plus, BarChart3 } from "lucide-react";
 import { subscriptionApi, subscriptionUtils } from "@/lib/api";
 import type {
   SubscriptionCurrency,
@@ -81,6 +81,10 @@ export function SubscriptionPage() {
 
   const handleAddNew = () => {
     navigate('/subscriptions/new');
+  };
+
+  const handleViewStatistics = () => {
+    navigate('/statistics');
   };
 
   const handleToggleStatus = async (id: string) => {
@@ -165,6 +169,16 @@ export function SubscriptionPage() {
             >
               <Filter className="h-4 w-4" />
               Filter
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewStatistics}
+              className="flex items-center gap-1"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Statistics
             </Button>
 
             <Button onClick={handleAddNew}>

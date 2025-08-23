@@ -4,7 +4,7 @@
 set -e
 
 # Navigate to project root
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../../.."
 
 # Parse command line arguments
 SERVICE=""
@@ -52,7 +52,7 @@ fi
 # Check for production environment file
 if [ ! -f .env.prod ]; then
     echo "❌ .env.prod file not found. Please create it from template"
-    echo "📝 Run: cp docker/config/.env.prod.template .env.prod"
+    echo "📝 Run: cp docker/config/.env.docker .env.prod"
     echo "📝 Then edit .env.prod with your production configuration."
     exit 1
 fi
