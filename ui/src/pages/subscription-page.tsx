@@ -6,9 +6,7 @@ import { StatsCards } from "@/components/subscription/stats-cards";
 import { SubscriptionTable } from "@/components/subscription/subscription-table";
 import { SubscriptionCards } from "@/components/subscription/subscription-cards";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, Plus, BarChart3 } from "lucide-react";
+import { Plus, BarChart3 } from "lucide-react";
 import { subscriptionApi, subscriptionUtils } from "@/lib/api";
 import type {
   SubscriptionCurrency,
@@ -29,9 +27,6 @@ export function SubscriptionPage() {
   const [subscriptions, setSubscriptions] = useState<SubscriptionDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   // Load subscriptions on component mount
   useEffect(() => {
@@ -54,15 +49,6 @@ export function SubscriptionPage() {
     }
   };
 
-  // Handle filters
-  const filteredSubscriptions = subscriptions.filter(sub => {
-    if (statusFilter && sub.status !== statusFilter) return false;
-    if (categoryFilter && sub.category !== categoryFilter) return false;
-    return true;
-  });
-
-  // Get unique categories for filter
-  const categories = [...new Set(subscriptions.map(sub => sub.category))].filter(Boolean) as string[];
 
   // Handlers
   const handleEdit = (id: string) => {
@@ -164,16 +150,6 @@ export function SubscriptionPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setFilterOpen(true)}
-              className="flex items-center gap-1"
-            >
-              <Filter className="h-4 w-4" />
-              Filter
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
               onClick={handleViewStatistics}
               className="flex items-center gap-1"
             >
@@ -188,12 +164,12 @@ export function SubscriptionPage() {
           </div>
         </div>
 
-        <StatsCards subscriptions={filteredSubscriptions} />
+        <StatsCards subscriptions={subscriptions} />
 
         {/* Desktop Table View */}
         <div className="hidden lg:block">
           <SubscriptionTable
-            subscriptions={filteredSubscriptions}
+            subscriptions={subscriptions}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onToggleStatus={handleToggleStatus}
@@ -203,7 +179,7 @@ export function SubscriptionPage() {
         {/* Mobile Cards View */}
         <div className="lg:hidden">
           <SubscriptionCards
-            subscriptions={filteredSubscriptions}
+            subscriptions={subscriptions}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onToggleStatus={handleToggleStatus}
@@ -212,66 +188,6 @@ export function SubscriptionPage() {
       </main>
 
       <Navigation />
-
-      {/* Filter Dialog */}
-      <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Filter Subscriptions</DialogTitle>
-            <DialogDescription>
-              Filter your subscriptions by status and category.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select value={statusFilter || ""} onValueChange={(value) => setStatusFilter(value || null)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="Cancelled">Cancelled</SelectItem>
-                  <SelectItem value="Trial">Trial</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Category</label>
-              <Select value={categoryFilter || ""} onValueChange={(value) => setCategoryFilter(value || null)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setStatusFilter(null);
-                  setCategoryFilter(null);
-                }}
-              >
-                Clear Filters
-              </Button>
-              <Button onClick={() => setFilterOpen(false)}>Apply</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
