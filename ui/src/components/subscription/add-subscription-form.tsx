@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import type { 
-  SubscriptionFormValues, 
-  AddSubscriptionFormProps 
+import type {
+  SubscriptionFormValues,
+  AddSubscriptionFormProps
 } from '@/types';
 import { COLOR_OPTIONS } from '@/types';
 
@@ -169,6 +169,11 @@ export function AddSubscriptionForm({ subscription, onSubmit, onCancel }: AddSub
               <SelectItem value="Fitness">Fitness</SelectItem>
               <SelectItem value="Education">Education</SelectItem>
               <SelectItem value="Business">Business</SelectItem>
+              <SelectItem value="Retail">Retail</SelectItem>
+              <SelectItem value="Transportation">Transportation</SelectItem>
+              <SelectItem value="Food">Food</SelectItem>
+              <SelectItem value="Lifestyle">Lifestyle</SelectItem>
+              <SelectItem value="Utilities">Utilities</SelectItem>
             </SelectContent>
           </Select>
         </div>
