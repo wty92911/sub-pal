@@ -25,6 +25,7 @@ export interface LoginRequest {
 }
 
 // ======== Auth Context Types ========
+import type { ApiError } from './api.types';
 
 export interface AuthContextType {
   user: User | null;
@@ -32,6 +33,6 @@ export interface AuthContextType {
   register: (email: string, password: string, name?: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
-  error: string | null;
+  error: ApiError | null;
   clearError: () => void;
 }

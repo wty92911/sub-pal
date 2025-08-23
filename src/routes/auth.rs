@@ -26,16 +26,23 @@ async fn register(
     // Validate input
     if request.email.is_empty() {
         tracing::warn!("Register request failed: Email is empty");
-        return Err(AppError::BadRequest("Email is required".to_string()));
+        return Err(AppError::validation_error(
+            "Email is required for registration",
+            "Please enter a valid email address to create your account.",
+        ));
     }
     if request.password.is_empty() {
         tracing::warn!("Register request failed: Password is empty");
-        return Err(AppError::BadRequest("Password is required".to_string()));
+        return Err(AppError::validation_error(
+            "Password is required for registration",
+            "Please create a password to secure your account.",
+        ));
     }
     if request.password.len() < 8 {
         tracing::warn!("Register request failed: Password too short");
-        return Err(AppError::BadRequest(
-            "Password must be at least 8 characters".to_string(),
+        return Err(AppError::validation_error(
+            "Password must be at least 8 characters",
+            "Your password must be at least 8 characters long for security.",
         ));
     }
 
@@ -81,11 +88,17 @@ async fn login(
     // Validate input
     if request.email.is_empty() {
         tracing::warn!("Login request failed: Email is empty");
-        return Err(AppError::BadRequest("Email is required".to_string()));
+        return Err(AppError::validation_error(
+            "Email is required for login",
+            "Please enter your email address to sign in.",
+        ));
     }
     if request.password.is_empty() {
         tracing::warn!("Login request failed: Password is empty");
-        return Err(AppError::BadRequest("Password is required".to_string()));
+        return Err(AppError::validation_error(
+            "Password is required for login",
+            "Please enter your password to sign in.",
+        ));
     }
 
     // Create user service

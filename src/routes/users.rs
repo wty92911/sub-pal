@@ -18,8 +18,9 @@ async fn get_current_user(
     State(pool): State<PgPool>,
 ) -> Result<Json<ApiResponse<UserResponse>>, AppError> {
     // Extract auth from headers
-    let auth =
-        extract_auth(&headers).map_err(|_| AppError::Unauthorized("Unauthorized".to_string()))?;
+    let auth = extract_auth(&headers).map_err(|_| {
+        AppError::unauthorized("Authentication required to access user information")
+    })?;
 
     // Log the request
     tracing::info!("Get current user request for user ID: {}", auth.user_id);

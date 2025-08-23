@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '../../lib/auth-context';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertCircle } from 'lucide-react';
+import { ErrorDisplay } from '../ui/error-display';
 
 // Form validation schema
 const loginSchema = z.object({
@@ -58,7 +58,14 @@ export function LoginForm() {
 
 
   // Display either auth context error or form error
-  const displayError = authError || formError;
+  const displayError = authError || (formError ? {
+    message: formError,
+    user_message: formError,
+    code: 'FORM_ERROR',
+    category: 'validation' as const,
+    details: undefined,
+    suggestions: []
+  } : null);
 
   return (
     <div className="mx-auto w-full max-w-md space-y-6 p-6">
@@ -68,13 +75,11 @@ export function LoginForm() {
       </div>
 
       {displayError && (
-        <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive flex items-start">
-          <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0 text-destructive" />
-          <div>
-            <p className="font-medium">Login Error</p>
-            <p>{displayError}</p>
-          </div>
-        </div>
+        <ErrorDisplay
+          error={displayError}
+          showSuggestions={true}
+          className="mb-4"
+        />
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

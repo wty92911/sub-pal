@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from './api';
 import { getSecureToken, removeSecureToken } from './secure-storage';
-import type { AuthContextType, User } from '@/types';
+import { ErrorHandler } from './error-handler';
+import type { AuthContextType, User, ApiError } from '@/types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -16,7 +17,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
   // Check if user is already logged in
   useEffect(() => {
@@ -52,42 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('Login error details:', err);
 
-      // Use the error message from the API interceptor if available
-      let errorMessage = err.userMessage || 'Login failed. Please check your credentials.';
+      const apiError = ErrorHandler.extractError(err);
+      setError(apiError);
 
-      // If no userMessage is set, try to extract from response
-      if (!err.userMessage && err.response) {
-        // Server responded with an error
-        if (err.response.data) {
-          if (typeof err.response.data === 'object') {
-            // Handle the specific format: {"success":false,"error":{"code":"UNAUTHORIZED","message":"Invalid email or password"}}
-            if (err.response.data.error && typeof err.response.data.error === 'object' && err.response.data.error.message) {
-              errorMessage = err.response.data.error.message;
-            } else if (err.response.data.error && typeof err.response.data.error === 'string') {
-              errorMessage = err.response.data.error;
-            } else if (err.response.data.message) {
-              errorMessage = err.response.data.message;
-            }
-          } else if (typeof err.response.data === 'string') {
-            errorMessage = err.response.data;
-          }
-        } else if (err.response.status === 401) {
-          errorMessage = 'Invalid email or password. Please try again.';
-        } else if (err.response.status === 404) {
-          errorMessage = 'Account not found. Please check your email address.';
-        } else if (err.response.status === 400) {
-          errorMessage = 'Invalid login information. Please check your email and password.';
-        } else if (err.response.status >= 500) {
-          errorMessage = 'Server error. Please try again later.';
-        }
-      } else if (err.request) {
-        // Request was made but no response received
-        errorMessage = 'Unable to connect to the server. Please check your internet connection.';
-      }
-
-      console.log('Setting error in auth context:', errorMessage);
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      throw new Error(apiError.user_message);
     } finally {
       setIsLoading(false);
     }
@@ -102,40 +71,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('Registration error details:', err);
 
-      // Use the error message from the API interceptor if available
-      let errorMessage = err.userMessage || 'Registration failed. Please try again.';
+      const apiError = ErrorHandler.extractError(err);
+      setError(apiError);
 
-      // If no userMessage is set, try to extract from response
-      if (!err.userMessage && err.response) {
-        // Server responded with an error
-        if (err.response.data) {
-          if (typeof err.response.data === 'object') {
-            // Handle the specific format: {"success":false,"error":{"code":"CONFLICT","message":"Email already exists"}}
-            if (err.response.data.error && typeof err.response.data.error === 'object' && err.response.data.error.message) {
-              errorMessage = err.response.data.error.message;
-            } else if (err.response.data.error && typeof err.response.data.error === 'string') {
-              errorMessage = err.response.data.error;
-            } else if (err.response.data.message) {
-              errorMessage = err.response.data.message;
-            }
-          } else if (typeof err.response.data === 'string') {
-            errorMessage = err.response.data;
-          }
-        } else if (err.response.status === 409) {
-          errorMessage = 'An account with this email already exists.';
-        } else if (err.response.status === 400) {
-          errorMessage = 'Invalid registration information. Please check your details.';
-        } else if (err.response.status >= 500) {
-          errorMessage = 'Server error. Please try again later.';
-        }
-      } else if (err.request) {
-        // Request was made but no response received
-        errorMessage = 'Unable to connect to the server. Please check your internet connection.';
-      }
-
-      console.log('Setting error in auth context:', errorMessage);
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      throw new Error(apiError.user_message);
     } finally {
       setIsLoading(false);
     }

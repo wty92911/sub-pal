@@ -7,8 +7,11 @@ export interface ApiResponse<T> {
 
 export interface ApiError {
   message: string;
-  code?: string;
+  user_message: string;
+  code: string;
+  category: 'auth' | 'validation' | 'not_found' | 'conflict' | 'server' | 'network';
   details?: Record<string, unknown>;
+  suggestions: string[];
 }
 
 // ======== API Response Wrappers ========

@@ -5,8 +5,8 @@ use tracing;
 
 /// Creates a connection pool to the PostgreSQL database and runs migrations
 pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
-    let database_url =
-        env::var("DATABASE_URL").expect("DATABASE_URL environment variable must be set");
+    let database_url = env::var("DATABASE_URL")
+        .unwrap_or_else(|_| "postgres://postgres:postgres@localhost:5432/sub_pal".to_string());
 
     tracing::info!("Creating database connection pool...");
     tracing::debug!("Database URL: {}", mask_database_url(&database_url));

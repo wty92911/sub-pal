@@ -35,7 +35,7 @@ impl UserService {
                     request.email,
                     e
                 );
-                AppError::InternalServerError(format!("Database error: {e}"))
+                AppError::database_error("user lookup", format!("Database error: {e}"))
             })?;
 
         if existing_user.is_some() {
@@ -43,10 +43,13 @@ impl UserService {
                 "UserService::register - User already exists with email: {}",
                 request.email
             );
-            return Err(AppError::Conflict(format!(
-                "User with email {} already exists",
-                request.email
-            )));
+            return Err(AppError::conflict(
+                "Email already exists",
+                format!(
+                    "An account with the email '{}' already exists. Please use a different email or try logging in instead.",
+                    request.email
+                ),
+            ));
         }
 
         // Hash password
@@ -56,15 +59,13 @@ impl UserService {
                 request.email,
                 e
             );
-            AppError::InternalServerError(format!("Password hashing error: {e}"))
+            AppError::internal_error(format!("Password hashing error: {e}"))
         })?;
 
         // Begin transaction
-        let mut tx = self
-            .pool
-            .begin()
-            .await
-            .map_err(|e| AppError::InternalServerError(format!("Transaction error: {e}")))?;
+        let mut tx = self.pool.begin().await.map_err(|e| {
+            AppError::database_error("transaction start", format!("Transaction error: {e}"))
+        })?;
 
         // Insert user
         let user_row = sqlx::query(
@@ -78,7 +79,9 @@ impl UserService {
         .bind(&password_hash)
         .fetch_one(&mut *tx)
         .await
-        .map_err(|e| AppError::InternalServerError(format!("User creation error: {e}")))?;
+        .map_err(|e| {
+            AppError::database_error("user creation", format!("User creation error: {e}"))
+        })?;
 
         let user = crate::models::User {
             id: user_row.get("id"),
@@ -101,7 +104,9 @@ impl UserService {
         .bind(serde_json::Value::Object(serde_json::Map::new()))
         .fetch_one(&mut *tx)
         .await
-        .map_err(|e| AppError::InternalServerError(format!("Profile creation error: {e}")))?;
+        .map_err(|e| {
+            AppError::database_error("profile creation", format!("Profile creation error: {e}"))
+        })?;
 
         let profile = crate::models::UserProfile {
             id: profile_row.get("id"),
@@ -113,9 +118,12 @@ impl UserService {
         };
 
         // Commit transaction
-        tx.commit()
-            .await
-            .map_err(|e| AppError::InternalServerError(format!("Transaction commit error: {e}")))?;
+        tx.commit().await.map_err(|e| {
+            AppError::database_error(
+                "transaction commit",
+                format!("Transaction commit error: {e}"),
+            )
+        })?;
 
         // Return user response
         Ok(user.to_response(Some(&profile)))
@@ -156,14 +164,17 @@ impl UserService {
                 request.email,
                 e
             );
-            AppError::InternalServerError(format!("Database error: {e}"))
+            AppError::database_error("user login lookup", format!("Database error: {e}"))
         })?
         .ok_or_else(|| {
             tracing::warn!(
                 "UserService::login - User not found with email: {}",
                 request.email
             );
-            AppError::Unauthorized("Invalid email or password".to_string())
+            AppError::unauthorized_with_message(
+                "User not found for login attempt",
+                "Invalid email or password. Please check your credentials and try again.",
+            )
         })?;
 
         // Extract values from the row
@@ -189,7 +200,7 @@ impl UserService {
                 request.email,
                 e
             );
-            AppError::InternalServerError(format!("Password verification error: {e}"))
+            AppError::internal_error(format!("Password verification error: {e}"))
         })?;
 
         if !is_valid {
@@ -197,8 +208,9 @@ impl UserService {
                 "UserService::login - Invalid password for email: {}",
                 request.email
             );
-            return Err(AppError::Unauthorized(
-                "Invalid email or password".to_string(),
+            return Err(AppError::unauthorized_with_message(
+                "Password verification failed",
+                "Invalid email or password. Please check your credentials and try again.",
             ));
         }
 
@@ -223,7 +235,7 @@ impl UserService {
                 user.id,
                 e
             );
-            AppError::InternalServerError(format!("Token generation error: {e}"))
+            AppError::internal_error(format!("Token generation error: {e}"))
         })?;
 
         let refresh_token = generate_refresh_token(user.id).map_err(|e| {
@@ -232,7 +244,7 @@ impl UserService {
                 user.id,
                 e
             );
-            AppError::InternalServerError(format!("Refresh token generation error: {e}"))
+            AppError::internal_error(format!("Refresh token generation error: {e}"))
         })?;
 
         // Return auth response
@@ -272,8 +284,8 @@ impl UserService {
         .bind(user_id)
         .fetch_optional(&self.pool)
         .await
-        .map_err(|e| AppError::InternalServerError(format!("Database error: {e}")))?
-        .ok_or_else(|| AppError::NotFound(format!("User with ID {user_id} not found")))?;
+        .map_err(|e| AppError::database_error("user lookup by ID", format!("Database error: {e}")))?
+        .ok_or_else(|| AppError::not_found("User", format!("User with ID {user_id} not found")))?;
 
         // Extract values from the row
         let user_id: uuid::Uuid = result.get("user_id");

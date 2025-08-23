@@ -92,7 +92,7 @@ pub fn verify_password(password: &str, hash: &str) -> Result<bool, argon2::passw
 
 // Generate a JWT token
 pub fn generate_token(user_id: Uuid) -> Result<String, jsonwebtoken::errors::Error> {
-    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+    let jwt_secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret".to_string());
 
     // Create claims for the token
     let current_time = std::time::SystemTime::now()
@@ -116,7 +116,7 @@ pub fn generate_token(user_id: Uuid) -> Result<String, jsonwebtoken::errors::Err
 
 // Generate a refresh token
 pub fn generate_refresh_token(user_id: Uuid) -> Result<String, jsonwebtoken::errors::Error> {
-    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+    let jwt_secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret".to_string());
 
     // Create claims for the refresh token
     let current_time = std::time::SystemTime::now()
@@ -140,7 +140,7 @@ pub fn generate_refresh_token(user_id: Uuid) -> Result<String, jsonwebtoken::err
 
 // Extract user ID from JWT token
 pub fn extract_user_id_from_token(token: &str) -> Result<Uuid, AuthError> {
-    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+    let jwt_secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret".to_string());
 
     // Decode and validate the token
     let token_data = decode::<Claims>(
