@@ -4,7 +4,7 @@
 set -e
 
 # Navigate to project root
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../../.."
 
 BACKUP_DIR="./backups"
 DATE=$(date +%Y%m%d_%H%M%S)
@@ -16,14 +16,14 @@ echo "📦 Starting database backup..."
 mkdir -p "$BACKUP_DIR"
 
 # Check if database container is running
-if ! docker-compose -f docker/compose/docker-compose.yml ps | grep -q "database.*Up"; then
+if ! docker-compose -f docker/compose/docker-compose.prod.yml ps | grep -q "database.*Up"; then
     echo "❌ Database container is not running. Please start it first."
     exit 1
 fi
 
 # Create backup
 echo "💾 Creating backup: $BACKUP_FILE"
-docker-compose -f docker/compose/docker-compose.yml exec -T database pg_dump -U postgres sub_pal > "$BACKUP_DIR/$BACKUP_FILE"
+docker-compose -f docker/compose/docker-compose.prod.yml exec -T database pg_dump -U postgres sub_pal > "$BACKUP_DIR/$BACKUP_FILE"
 
 # Compress backup
 echo "🗜️  Compressing backup..."
