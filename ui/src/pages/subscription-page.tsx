@@ -6,6 +6,7 @@ import { StatsCards } from "@/components/subscription/stats-cards";
 import { SubscriptionTable } from "@/components/subscription/subscription-table";
 import { SubscriptionCards } from "@/components/subscription/subscription-cards";
 import { Button } from "@/components/ui/button";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import { Plus, BarChart3 } from "lucide-react";
 import { subscriptionApi, subscriptionUtils } from "@/lib/api";
 import type {
@@ -27,6 +28,13 @@ export function SubscriptionPage() {
   const [subscriptions, setSubscriptions] = useState<SubscriptionDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [subscriptionToDelete, setSubscriptionToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Load subscriptions on component mount
   useEffect(() => {
@@ -55,10 +63,18 @@ export function SubscriptionPage() {
     navigate(`/subscriptions/edit/${id}`);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string, subscriptionName: string) => {
+    setSubscriptionToDelete({ id, name: subscriptionName });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!subscriptionToDelete) return;
+
     try {
-      await subscriptionApi.delete(id);
-      setSubscriptions(subscriptions.filter(sub => sub.id !== id));
+      await subscriptionApi.delete(subscriptionToDelete.id);
+      setSubscriptions(subscriptions.filter(sub => sub.id !== subscriptionToDelete.id));
+      setSubscriptionToDelete(null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to delete subscription');
       console.error('Error deleting subscription:', err);
@@ -188,6 +204,13 @@ export function SubscriptionPage() {
       </main>
 
       <Navigation />
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        subscriptionName={subscriptionToDelete?.name}
+      />
     </div>
   );
 }

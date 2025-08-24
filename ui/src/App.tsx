@@ -30,7 +30,11 @@ function RootRedirect() {
 }
 
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Check for saved preference or default to false
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
 
   const handleError = useCallback((error: Error, errorInfo: any) => {
     // Log error to console in development
@@ -41,8 +45,28 @@ function App() {
   }, []);
 
   const toggleDarkMode = useCallback(() => {
-    setIsDarkMode(prev => !prev);
+    setIsDarkMode(prev => {
+      const newMode = !prev;
+      // Save preference to localStorage
+      localStorage.setItem('darkMode', JSON.stringify(newMode));
+      // Apply dark mode to document element for proper portal theme inheritance
+      if (newMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return newMode;
+    });
   }, []);
+
+  // Apply initial dark mode class on mount
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   return (
     <ErrorBoundary onError={handleError}>

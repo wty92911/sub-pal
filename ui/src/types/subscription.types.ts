@@ -78,14 +78,14 @@ export interface SubscriptionDisplay {
 export interface SubscriptionTableProps {
   subscriptions: SubscriptionDisplay[];
   onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, subscriptionName: string) => void;
   onToggleStatus: (id: string) => void;
 }
 
 export interface SubscriptionCardsProps {
   subscriptions: SubscriptionDisplay[];
   onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, subscriptionName: string) => void;
   onToggleStatus: (id: string) => void;
 }
 

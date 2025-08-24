@@ -59,21 +59,26 @@ split_commits = false
 # regex for preprocessing the commit messages
 commit_preprocessors = [
   # { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](https://github.com/orhun/git-cliff/issues/${2}))"}, # replace issue numbers
+  { pattern = ':\w+:', replace = "" }, # Remove gitmoji
+  { pattern = '🎨|✨|🔥|🐛|🚑️|✏️|💄|⬆️|⬇️|📝|🔖|🚀|💚|👷|📈|♻️|➕|➖|🔧|🔨|🌐|✅|⚡️|🔒️|🔐|🚨|🚧|💥|🚑|♿️|💡|🍻|💬|🗃️|🔊|🔇|👥|🚸|🏗️|📱|🤡|🥚|🙈|📸|⚗️|🔍|🏷️|🌱|🚩|🥅|💫|🗑️|🛂|🩹|🧐|⚰️|🧪|👔|🩺|🧱|🧑‍💻|💸|🧵|🦺', replace = "" }, # Remove gitmoji unicode
 ]
 # regex for parsing and grouping commits
 commit_parsers = [
   { message = "\\[skip", skip = true },
   { message = "\\p{Han}", skip = true },
-  { message = "^feat", group = "Features" },
-  { message = "^fix", group = "Bug Fixes" },
-  { message = "^doc", group = "Documentation" },
-  { message = "^perf", group = "Performance" },
-  { message = "^refactor", group = "Refactoring" },
-  { message = "^style", group = "Style" },
-  { message = "^revert", group = "Revert" },
-  { message = "^test", group = "Tests" },
-  { message = "^chore\\(version\\):", skip = true },
-  { message = "^chore", group = "Miscellaneous Chores" },
+  { message = "^feat|^✨|^:sparkles:", group = "Features" },
+  { message = "^fix|^🐛|^:bug:", group = "Bug Fixes" },
+  { message = "^doc|^📝|^:memo:", group = "Documentation" },
+  { message = "^perf|^⚡️|^:zap:", group = "Performance" },
+  { message = "^refactor|^♻️|^:recycle:", group = "Refactoring" },
+  { message = "^style|^💄|^:lipstick:", group = "Style" },
+  { message = "^revert|^⏪️|^:rewind:", group = "Revert" },
+  { message = "^test|^✅|^:white_check_mark:", group = "Tests" },
+  { message = "^chore\\(version\\):|^🔖|^:bookmark:", skip = true },
+  { message = "^chore|^🔧|^:wrench:", group = "Miscellaneous Chores" },
+  { message = "^build|^👷|^:construction_worker:", group = "Build System" },
+  { message = "^ci|^💚|^:green_heart:", group = "Continuous Integration" },
+  { message = "^security|^🔒️|^:lock:", group = "Security" },
   { message = ".*", group = "Other" },
   { body = ".*security", group = "Security" },
 ]

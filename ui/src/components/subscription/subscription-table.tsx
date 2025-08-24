@@ -100,7 +100,7 @@ export function SubscriptionTable({ subscriptions, onEdit, onDelete, onToggleSta
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onDelete(String(subscription.id))}
+                    onClick={() => onDelete(String(subscription.id), subscription.name)}
                     className="text-destructive hover:text-destructive/80"
                   >
                     <Trash2 className="w-4 h-4" />

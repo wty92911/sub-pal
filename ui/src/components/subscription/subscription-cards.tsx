@@ -30,7 +30,7 @@ const SubscriptionCard = React.memo(({
 }: {
   subscription: any;
   onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, subscriptionName: string) => void;
   onToggleStatus: (id: string) => void;
 }) => {
   const handleEdit = useCallback(() => {
@@ -38,8 +38,8 @@ const SubscriptionCard = React.memo(({
   }, [onEdit, subscription.id]);
 
   const handleDelete = useCallback(() => {
-    onDelete(String(subscription.id));
-  }, [onDelete, subscription.id]);
+    onDelete(String(subscription.id), subscription.name);
+  }, [onDelete, subscription.id, subscription.name]);
 
   const handleToggleStatus = useCallback(() => {
     onToggleStatus(String(subscription.id));
