@@ -8,8 +8,8 @@ const Dialog = DialogPrimitive.Root;
 
 const DialogTrigger = DialogPrimitive.Trigger;
 
-const DialogPortal = ({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Portal>) => (
-  <DialogPrimitive.Portal className={cn(className)} {...props} />
+const DialogPortal = (props: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Portal>) => (
+  <DialogPrimitive.Portal {...props} />
 );
 
 const DialogClose = DialogPrimitive.Close;

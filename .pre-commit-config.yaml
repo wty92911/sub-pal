@@ -62,3 +62,10 @@ repos:
         language: rust
         files: \.rs$
         pass_filenames: false
+      - id: npm-build
+        name: npm build
+        description: build the project
+        entry: bash -c 'cd ui && npm run build'
+        language: system
+        files: \.(ts|tsx)$
+        pass_filenames: false
